@@ -9,13 +9,14 @@
 package edu.ramapo.ktavadze.konane;
 
 import android.graphics.Color;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
 import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.Button;
-import android.widget.TextView;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,11 +31,55 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Generate column labels xml.
+        generateColumnLabels();
+
         // Generate board xml.
         generateBoard();
+    }
 
-        // Display the starting board.
-        displayBoard();
+    /**
+     Generates the xml for the column labels.
+     */
+    public void generateColumnLabels() {
+        LinearLayout main = findViewById(R.id.main);
+
+        // Generate row of column labels.
+        LinearLayout colLabels = new LinearLayout(this);
+
+        // Add column labels params.
+        LinearLayout.LayoutParams colLabelsParams = new LinearLayout.LayoutParams(
+            LayoutParams.MATCH_PARENT,
+            LayoutParams.WRAP_CONTENT,
+            1.0f
+        );
+        colLabels.setLayoutParams(colLabelsParams);
+
+        // Generate column labels.
+        for (short c = 1; c <= Board.SIZE; c++) {
+            TextView colLabel = new TextView(this);
+
+            // Add column label params.
+            LinearLayout.LayoutParams colLabelParams = new LinearLayout.LayoutParams(
+                LayoutParams.WRAP_CONTENT,
+                LayoutParams.MATCH_PARENT,
+                1.0f
+            );
+            colLabel.setLayoutParams(colLabelParams);
+
+            // Add column label styles.
+            colLabel.setBackgroundColor(Color.parseColor("#000000"));
+            colLabel.setTextColor(Color.parseColor("#FFFFFF"));
+            colLabel.setGravity(Gravity.CENTER);
+            colLabel.setTextSize(25);
+            colLabel.setText("" + c);
+
+            // Add label to column labels.
+            colLabels.addView(colLabel);
+        }
+
+        // Add column labels to main.
+        main.addView(colLabels);
     }
 
     /**
@@ -49,11 +94,32 @@ public class MainActivity extends AppCompatActivity {
 
             // Add row layout params.
             LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
-                    LayoutParams.MATCH_PARENT,
-                    LayoutParams.WRAP_CONTENT,
-                    1.0f
+                LayoutParams.MATCH_PARENT,
+                LayoutParams.WRAP_CONTENT,
+                1.0f
             );
             row.setLayoutParams(rowParams);
+
+            // Generate row label.
+            TextView rowLabel = new TextView(this);
+
+            // Add row label params.
+            LinearLayout.LayoutParams rowLabelParams = new LinearLayout.LayoutParams(
+                LayoutParams.WRAP_CONTENT,
+                LayoutParams.MATCH_PARENT,
+                1.0f
+            );
+            rowLabel.setLayoutParams(rowLabelParams);
+
+            // Add row label styles.
+            rowLabel.setBackgroundColor(Color.parseColor("#000000"));
+            rowLabel.setTextColor(Color.parseColor("#FFFFFF"));
+            rowLabel.setGravity(Gravity.CENTER);
+            rowLabel.setTextSize(25);
+            rowLabel.setText("" + (i + 1));
+
+            // Add label to row.
+            row.addView(rowLabel);
 
             // Generate buttons.
             for (short j = 0; j < Board.SIZE; j++) {
@@ -61,9 +127,9 @@ public class MainActivity extends AppCompatActivity {
 
                 // Add button layout params.
                 LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
-                        LayoutParams.WRAP_CONTENT,
-                        LayoutParams.MATCH_PARENT,
-                        1.0f
+                    LayoutParams.WRAP_CONTENT,
+                    LayoutParams.MATCH_PARENT,
+                    1.0f
                 );
                 button.setLayoutParams(buttonParams);
 
@@ -109,6 +175,9 @@ public class MainActivity extends AppCompatActivity {
             // Add row to main.
             main.addView(row);
         }
+
+        // Display the starting board.
+        displayBoard();
     }
 
     /**
