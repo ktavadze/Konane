@@ -21,10 +21,8 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity {
 
     private Game game = new Game();
-
-    private boolean isMoving = false;
-    private int r1;
-    private int c1;
+    private int row;
+    private int col;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -245,39 +243,11 @@ public class MainActivity extends AppCompatActivity {
     public void respond(View view) {
         String tag = (String) view.getTag();
 
-        // Process the first button press.
-        if (!isMoving) {
-            r1 = Character.getNumericValue(tag.charAt(tag.length() - 2));
-            c1 = Character.getNumericValue(tag.charAt(tag.length() - 1));
+        row = Character.getNumericValue(tag.charAt(tag.length() - 2));
+        col = Character.getNumericValue(tag.charAt(tag.length() - 1));
 
-            isMoving = true;
-
-            displayMessage("Moving " + r1 + c1 + "...");
-        }
-        // Process the consecutive button presses.
-        else {
-            int r2 = Character.getNumericValue(tag.charAt(tag.length() - 2));
-            int c2 = Character.getNumericValue(tag.charAt(tag.length() - 1));
-
-            // Process the move.
-            String move = game.processMove(r1, c1, r2, c2);
-            if (move.equals("Illegal")) {
-                isMoving = false;
-
-                displayMessage("Illegal move!");
-            }
-            else if (move.equals("Basic")) {
-                isMoving = false;
-
-                displayMessage("...to " + r2 + c2);
-            }
-            else if (move.equals("Combo")) {
-                r1 = r2;
-                c1 = c2;
-
-                displayMessage("...to " + r2 + c2);
-            }
-        }
+        // Process move.
+        displayMessage(game.processMove(row, col));
 
         // Update user interface.
         displayBoard();

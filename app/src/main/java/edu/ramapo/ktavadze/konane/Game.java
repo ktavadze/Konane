@@ -9,6 +9,10 @@ public class Game {
     public Player black = new Player('B');
     public Player white = new Player('W');
     public char turn = 'B';
+    public boolean isMoving = false;
+    public boolean isCombo = false;
+    public int row;
+    public int col;
 
     /**
      Game class constructor.
@@ -17,58 +21,87 @@ public class Game {
 
     /**
      Processes each move to determine the appropriate course of action.
-     @param a_r1 - Integer row value of the origin.
-     @param a_c1 - Integer column value of the origin.
-     @param a_r2 - Integer row value of the destination.
-     @param a_c2 - Integer column value of the destination.
+     @param a_row - Integer row value.
+     @param a_col - Integer column value.
      @return String value depending on the type of move being attempted.
      */
-    public String processMove(int a_r1, int a_c1, int a_r2, int a_c2) {
-        // Process black player's turn.
-        if (turn == 'B') {
-            // Check if black player can make any move.
-            if (black.canMove()) {
-                // Check if black player can make specified move.
-                if (black.canMove(a_r1, a_c1, a_r2, a_c2)) {
-                    // Black player makes specified move.
-                    black.makeMove(a_r1, a_c1, a_r2, a_c2);
+    public String processMove(int a_row, int a_col) {
+        // Process first move.
+        if (!isMoving && !isCombo) {
+            // Move starts.
+            if ((turn == 'B' && black.canMove(a_row, a_col)) ||
+                    (turn == 'W' && white.canMove(a_row, a_col))) {
+                row = a_row;
+                col = a_col;
 
-                    // Check if black player should make another move.
-                    if (black.canMove(a_r2, a_c2)) {
-                        return "Combo";
-                    }
+                isMoving = true;
+
+                return "Moving " + row + col + "...";
+            }
+            // Black passes.
+            else if (turn == 'B' && !black.canMove()) {
+                turn = 'W';
+
+                return "Black passes!";
+            }
+            // White passes.
+            else if (turn == 'W' && !white.canMove()) {
+                turn = 'B';
+
+                return "White passes!";
+            }
+            // Illegal move.
+            else {
+                return "Illegal move!";
+            }
+        }
+        // Process subsequent moves.
+        else {
+            // Black moves.
+            if (turn == 'B' && black.canMove(row, col, a_row, a_col)) {
+                black.makeMove(row, col, a_row, a_col);
+
+                if (black.canMove(a_row, a_col)) {
+                    isCombo = true;
+
+                    row = a_row;
+                    col = a_col;
+                }
+                else {
+                    isMoving = false;
+                    isCombo = false;
 
                     turn = 'W';
-                    return "Basic";
                 }
-                return "Illegal";
-            }
-            // Skip black player's turn
-            turn = 'W';
-        }
-        // Process white player's turn.
-        else if (turn == 'W') {
-            // Check if white player can make any move.
-            if (white.canMove()) {
-                // Check if white player can make specified move.
-                if (white.canMove(a_r1, a_c1, a_r2, a_c2)) {
-                    // White player makes specified move.
-                    white.makeMove(a_r1, a_c1, a_r2, a_c2);
 
-                    // Check if white player should make another move.
-                    if (white.canMove(a_r2, a_c2)) {
-                        return "Combo";
-                    }
+                return "...to " + a_row + a_col;
+            }
+            // White moves.
+            else if (turn == 'W' && white.canMove(row, col, a_row, a_col)) {
+                white.makeMove(row, col, a_row, a_col);
+
+                if (white.canMove(a_row, a_col)) {
+                    isCombo = true;
+
+                    row = a_row;
+                    col = a_col;
+                }
+                else {
+                    isMoving = false;
+                    isCombo = false;
 
                     turn = 'B';
-                    return "Basic";
                 }
-                return "Illegal";
+
+                return "...to " + a_row + a_col;
             }
-            // Skip white player's turn.
-            turn = 'B';
+            // Illegal move.
+            else {
+                isMoving = false;
+
+                return "Illegal move!";
+            }
         }
-        return "Error";
     }
 
     /**
