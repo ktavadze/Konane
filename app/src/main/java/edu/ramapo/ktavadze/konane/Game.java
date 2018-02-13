@@ -105,6 +105,27 @@ public class Game {
     }
 
     /**
+     Processes each pass command.
+     */
+    public String processPass() {
+        isMoving = false;
+        isCombo = false;
+
+        // Black passes.
+        if (turn == 'B') {
+            turn = 'W';
+
+            return "Black passes!";
+        }
+        // White passes.
+        else {
+            turn = 'B';
+
+            return "White passes!";
+        }
+    }
+
+    /**
      Determines whether the game is over.
      @return Boolean value depending on whether either player can make a move.
      */

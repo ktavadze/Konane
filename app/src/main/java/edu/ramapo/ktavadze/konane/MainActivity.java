@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         generateColumnLabels();
 
         // Generate rows.
-        for (short i = 0; i < Board.SIZE; i++) {
+        for (int i = 0; i < Board.SIZE; i++) {
             LinearLayout row = new LinearLayout(this);
 
             // Add row layout params.
@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
             row.addView(rowLabel1);
 
             // Generate buttons.
-            for (short j = 0; j < Board.SIZE; j++) {
+            for (int j = 0; j < Board.SIZE; j++) {
                 Button button = new Button(this);
 
                 // Add button layout params.
@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
                 button.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        respond(view);
+                        respondToMove(view);
                     }
                 });
 
@@ -175,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
         colLabels.setPadding(40,0,40,0);
 
         // Generate column labels.
-        for (short c = 1; c <= Board.SIZE; c++) {
+        for (int c = 1; c <= Board.SIZE; c++) {
             TextView colLabel = new TextView(this);
 
             // Add column label params.
@@ -237,10 +237,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     Responds to the button clicks and updates the view accordingly.
+     Responds to the move clicks and updates the view accordingly.
      @param view - View to be listened to and modified.
      */
-    public void respond(View view) {
+    public void respondToMove(View view) {
         String tag = (String) view.getTag();
 
         row = Character.getNumericValue(tag.charAt(tag.length() - 2));
@@ -259,6 +259,20 @@ public class MainActivity extends AppCompatActivity {
             // Display outcome.
             displayMessage(game.getResults());
         }
+    }
+
+    /**
+     Responds to the pass clicks and updates the view accordingly.
+     @param view - View to be listened to and modified.
+     */
+    public void respondToPass(View view) {
+        // Process move.
+        displayMessage(game.processPass());
+
+        // Update user interface.
+        displayBoard();
+        displayTurn();
+        displayScores();
     }
 
 }
