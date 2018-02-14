@@ -38,7 +38,7 @@ public class Game {
 
                 isMoving = true;
 
-                return "Moving " + row + col + "...";
+                return "Moving " + (row + 1) + (col + 1) + "...";
             }
             // Black passes.
             else if (turn == 'B' && !black.canMove()) {
@@ -76,7 +76,7 @@ public class Game {
                     turn = 'W';
                 }
 
-                return "...to " + a_row + a_col;
+                return "...to " + (a_row + 1) + (a_col + 1);
             }
             // White moves.
             else if (turn == 'W' && white.canMove(row, col, a_row, a_col)) {
@@ -95,7 +95,7 @@ public class Game {
                     turn = 'B';
                 }
 
-                return "...to " + a_row + a_col;
+                return "...to " + (a_row + 1) + (a_col + 1);
             }
             // Illegal move.
             else {
