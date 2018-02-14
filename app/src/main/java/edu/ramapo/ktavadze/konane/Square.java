@@ -20,7 +20,7 @@ public class Square {
      Empties the calling square.
      */
     public void empty() {
-        color = ' ';
+        color = 'O';
         isEmpty = true;
     }
 }

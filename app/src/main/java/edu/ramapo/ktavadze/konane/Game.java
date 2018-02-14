@@ -1,5 +1,7 @@
 package edu.ramapo.ktavadze.konane;
 
+import java.util.Scanner;
+
 /**
  * Game class.
  */
@@ -123,6 +125,83 @@ public class Game {
 
             return "White passes!";
         }
+    }
+
+    /**
+     Gets the state of the game.
+     @return String value depending on the current state.
+     */
+    public String getState() {
+        // Get scores.
+        String state = "Black: " + black.score + "\nWhite: " + white.score + "\nBoard:\n";
+
+        // Get board.
+        for (int i = 0; i < Board.SIZE; i++) {
+            for (int j = 0; j < Board.SIZE; j++) {
+                state += board.table[i][j].color + " ";
+            }
+            state += "\n";
+        }
+
+        // Get turn.
+        if (turn == 'B') {
+            state += "Next Player: Black";
+        }
+        else {
+            state += "Next Player: White";
+        }
+
+        return state;
+    }
+
+    /**
+     Sets the state of the game.
+     @param a_state - String state value to be loaded.
+     */
+    public void setState(String a_state) {
+        Scanner scanner = new Scanner(a_state);
+        int lineNum = 1;
+        int row = 0;
+
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+
+            switch (lineNum) {
+                // Set black score.
+                case 1:
+                    black.score = Character.getNumericValue(line.charAt(7));
+                    break;
+                // Set white score.
+                case 2:
+                    white.score = Character.getNumericValue(line.charAt(7));
+                    break;
+                case 3:
+                    break;
+                // Set board.
+                case 4:case 5:case 6:case 7:case 8:case 9:
+                    for (int i = 0, j = 0; j < board.SIZE; i += 2, j++) {
+                        if (line.charAt(i) == 'O') {
+                            board.table[row][j].empty();
+                        }
+                        else {
+                            board.table[row][j].color = line.charAt(i);
+                            board.table[row][j].isEmpty = false;
+                        }
+                    }
+                    row++;
+                    break;
+                // Set turn.
+                case 10:
+                    turn = line.charAt(13) == 'B' ? 'B' : 'W';
+                    break;
+            }
+            lineNum++;
+        }
+        scanner.close();
+
+        // Reset move.
+        isMoving = false;
+        isCombo = false;
     }
 
     /**

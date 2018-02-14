@@ -17,12 +17,14 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 
 public class MainActivity extends AppCompatActivity {
 
     private Game game = new Game();
-    private int row;
-    private int col;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -208,7 +210,13 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < Board.SIZE; i++) {
             for (int j = 0; j < Board.SIZE; j++) {
                 String tag = "b" + i + j;
-                ((Button) board.findViewWithTag( tag )).setText("" + Game.board.table[i][j].color);
+                char color = Game.board.table[i][j].color;
+                if (color == 'O') {
+                    ((Button) board.findViewWithTag( tag )).setText(" ");
+                }
+                else {
+                    ((Button) board.findViewWithTag( tag )).setText("" + color);
+                }
             }
         }
     }
@@ -243,8 +251,8 @@ public class MainActivity extends AppCompatActivity {
     public void respondToMove(View view) {
         String tag = (String) view.getTag();
 
-        row = Character.getNumericValue(tag.charAt(tag.length() - 2));
-        col = Character.getNumericValue(tag.charAt(tag.length() - 1));
+        int row = Character.getNumericValue(tag.charAt(tag.length() - 2));
+        int col = Character.getNumericValue(tag.charAt(tag.length() - 1));
 
         // Process move.
         displayMessage(game.processMove(row, col));
@@ -268,6 +276,60 @@ public class MainActivity extends AppCompatActivity {
     public void respondToPass(View view) {
         // Process move.
         displayMessage(game.processPass());
+
+        // Update user interface.
+        displayTurn();
+    }
+
+    /**
+     Responds to the save clicks and updates the view accordingly.
+     @param view - View to be listened to and modified.
+     */
+    public void respondToSave(View view) {
+        // Get game state.
+        String state = game.getState();
+
+        // Save to file.
+        try {
+            FileOutputStream outFile = openFileOutput("konane.txt", MODE_PRIVATE);
+            OutputStreamWriter outWriter = new OutputStreamWriter(outFile);
+            outWriter.write(state);
+            outWriter.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        displayMessage("Game saved!");
+    }
+
+    /**
+     Responds to the load clicks and updates the view accordingly.
+     @param view - View to be listened to and modified.
+     */
+    public void respondToLoad(View view) {
+        String state = "";
+
+        // Load from file.
+        try {
+            FileInputStream inFile = openFileInput("konane.txt");
+            InputStreamReader inReader = new InputStreamReader(inFile);
+            char[] inBuffer = new char[64];
+            int charRead;
+            while ((charRead = inReader.read(inBuffer)) > 0) {
+                String stringRead = String.copyValueOf(inBuffer, 0, charRead);
+                state += stringRead;
+            }
+            inReader.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Set game state.
+        game.setState(state);
+
+        displayMessage("Game loaded!");
 
         // Update user interface.
         displayBoard();
