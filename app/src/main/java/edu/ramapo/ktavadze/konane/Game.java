@@ -7,19 +7,26 @@ import java.util.Scanner;
  */
 
 public class Game {
-    public static Board board = new Board();
-    public Player black = new Player('B');
-    public Player white = new Player('W');
-    public char turn = 'B';
-    public boolean isMoving = false;
-    public boolean isCombo = false;
+    public static Board board;
+    public Player black;
+    public Player white;
+    public char turn;
+    public boolean isMoving;
+    public boolean isCombo;
     public int row;
     public int col;
 
     /**
      Game class constructor.
      */
-    public Game() {}
+    public Game() {
+        board = new Board();
+        black = new Player('B');
+        white = new Player('W');
+        turn = 'B';
+        isMoving = false;
+        isCombo = false;
+    }
 
     /**
      Processes each move to determine the appropriate course of action.

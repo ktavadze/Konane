@@ -6,7 +6,7 @@ package edu.ramapo.ktavadze.konane;
 
 public class Player {
     public char color;
-    public int score = 0;
+    public int score;
 
     /**
      Player class constructor.
@@ -14,6 +14,7 @@ public class Player {
      */
     public Player(char a_color) {
         color = a_color;
+        score = 0;
     }
 
     /**

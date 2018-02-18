@@ -8,12 +8,14 @@ import java.util.Random;
 
 public class Board {
     public static final int SIZE = 6;
-    public Square[][] table = new Square[SIZE][SIZE];
+    public Square[][] table;
 
     /**
      Board class constructor.
      */
     public Board() {
+        table = new Square[SIZE][SIZE];
+
         populate();
 
         emptyRandomTwo();

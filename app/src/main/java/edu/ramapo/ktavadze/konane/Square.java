@@ -6,7 +6,7 @@ package edu.ramapo.ktavadze.konane;
 
 public class Square {
     public char color;
-    public boolean isEmpty = false;
+    public boolean isEmpty;
 
     /**
      Square class constructor.
@@ -14,6 +14,7 @@ public class Square {
      */
     public Square(char a_color){
         color = a_color;
+        isEmpty = false;
     }
 
     /**

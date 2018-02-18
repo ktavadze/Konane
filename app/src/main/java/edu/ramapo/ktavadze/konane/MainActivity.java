@@ -60,6 +60,10 @@ public class MainActivity extends AppCompatActivity {
                 // Load game.
                 respondToLoad();
                 return true;
+            case R.id.action_restart:
+                // Restart game.
+                respondToRestart();
+                return true;
             default:
                 // Invoke superclass to handle unrecognized action.
                 return super.onOptionsItemSelected(item);
@@ -313,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     Responds to the save clicks and updates the view accordingly.
+     Responds to the save action and updates the view accordingly.
      */
     public void respondToSave() {
         // Get game state.
@@ -334,7 +338,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     Responds to the load clicks and updates the view accordingly.
+     Responds to the load action and updates the view accordingly.
      */
     public void respondToLoad() {
         String state = "";
@@ -359,6 +363,21 @@ public class MainActivity extends AppCompatActivity {
         game.setState(state);
 
         displayMessage("Game loaded!");
+
+        // Update user interface.
+        displayBoard();
+        displayTurn();
+        displayScores();
+    }
+
+    /**
+     Responds to the restart action and updates the view accordingly.
+     */
+    public void respondToRestart() {
+        // Restart game.
+        game = new Game();
+
+        displayMessage("Welcome!");
 
         // Update user interface.
         displayBoard();
