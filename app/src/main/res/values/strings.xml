@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Konane</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_search">Search</string>
+    <string name="action_save">Save</string>
+    <string name="action_load">Load</string>
 </resources>

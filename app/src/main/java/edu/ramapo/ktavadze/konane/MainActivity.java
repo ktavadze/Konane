@@ -12,6 +12,9 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
@@ -33,6 +36,34 @@ public class MainActivity extends AppCompatActivity {
 
         // Generate board xml.
         generateBoard();
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                // TODO: Settings
+                return true;
+            case R.id.action_search:
+                // TODO: Search
+                return true;
+            case R.id.action_save:
+                // Save game.
+                respondToSave();
+                return true;
+            case R.id.action_load:
+                // Load game.
+                respondToLoad();
+                return true;
+            default:
+                // Invoke superclass to handle unrecognized action.
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     /**
@@ -283,9 +314,8 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      Responds to the save clicks and updates the view accordingly.
-     @param view - View to be listened to and modified.
      */
-    public void respondToSave(View view) {
+    public void respondToSave() {
         // Get game state.
         String state = game.getState();
 
@@ -305,9 +335,8 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      Responds to the load clicks and updates the view accordingly.
-     @param view - View to be listened to and modified.
      */
-    public void respondToLoad(View view) {
+    public void respondToLoad() {
         String state = "";
 
         // Load from file.
