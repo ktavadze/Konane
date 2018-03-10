@@ -32,7 +32,7 @@ import java.io.OutputStreamWriter;
 public class MainActivity extends AppCompatActivity {
 
     private Game game = new Game();
-    private Move hint = null;
+    private String hint = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -486,13 +486,13 @@ public class MainActivity extends AppCompatActivity {
         // Clear current hint.
         LinearLayout main = findViewById(R.id.main);
         if (hint != null) {
-            String startTag = "b" + hint.start.row + hint.start.col;
-            String endTag = "b" + hint.end.row + hint.end.col;
+            String startTag = "b" + hint.charAt(1) + hint.charAt(2);
+            String endTag = "b" + hint.charAt(3) + hint.charAt(4);
 
             Button startBtn = main.findViewWithTag(startTag);
             Button endBtn = main.findViewWithTag(endTag);
 
-            if (hint.start.color == 'B') {
+            if (hint.charAt(0) == 'B') {
                 startBtn.setBackgroundColor(Color.parseColor("#000000"));
                 endBtn.setBackgroundColor(Color.parseColor("#000000"));
             }
@@ -515,7 +515,7 @@ public class MainActivity extends AppCompatActivity {
         // Preview score.
         displayMessage("Score: +" + next.score);
 
-        hint = next;
+        hint = "" + next.start.color + next.start.row + next.start.col + next.end.row + next.end.col;
     }
 
 }
