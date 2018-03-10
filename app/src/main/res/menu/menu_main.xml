@@ -20,7 +20,15 @@
         android:title="@string/action_restart"
         app:showAsAction="never"/>
 
-    <item android:id="@+id/action_settings"
-        android:title="@string/action_settings"
+    <item android:id="@+id/action_preset"
+        android:title="@string/action_preset"
+        app:showAsAction="never"/>
+
+    <item android:id="@+id/action_case1"
+        android:title="@string/action_case1"
+        app:showAsAction="never"/>
+
+    <item android:id="@+id/action_case2"
+        android:title="@string/action_case2"
         app:showAsAction="never"/>
 </menu>

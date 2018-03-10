@@ -174,4 +174,72 @@ public class Player {
             }
         }
     }
+
+    /**
+     Determines whether the calling player can move up a particular square.
+     @param a_row - Integer row value of the square.
+     @param a_col - Integer column value of the square.
+     @return Boolean value depending on whether the player can move up the specified square.
+     */
+    public boolean canMoveUp(int a_row, int a_col) {
+        Square[][] table = Game.board.table;
+        // Check if square can move up.
+        if (a_row - 2 >= 0) {
+            if (table[a_row - 2][a_col].isEmpty && !table[a_row - 1][a_col].isEmpty) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     Determines whether the calling player can move right a particular square.
+     @param a_row - Integer row value of the square.
+     @param a_col - Integer column value of the square.
+     @return Boolean value depending on whether the player can move right the specified square.
+     */
+    public boolean canMoveRight(int a_row, int a_col) {
+        Square[][] table = Game.board.table;
+        // Check if square can move right.
+        if (a_col + 2 < Board.SIZE) {
+            if (table[a_row][a_col + 2].isEmpty && !table[a_row][a_col + 1].isEmpty) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     Determines whether the calling player can move down a particular square.
+     @param a_row - Integer row value of the square.
+     @param a_col - Integer column value of the square.
+     @return Boolean value depending on whether the player can move down the specified square.
+     */
+    public boolean canMoveDown(int a_row, int a_col) {
+        Square[][] table = Game.board.table;
+        // Check if square can move down.
+        if (a_row + 2 < Board.SIZE) {
+            if (table[a_row + 2][a_col].isEmpty && !table[a_row + 1][a_col].isEmpty) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     Determines whether the calling player can move left a particular square.
+     @param a_row - Integer row value of the square.
+     @param a_col - Integer column value of the square.
+     @return Boolean value depending on whether the player can move left the specified square.
+     */
+    public boolean canMoveLeft(int a_row, int a_col) {
+        Square[][] table = Game.board.table;
+        // Check if square can move left.
+        if (a_col - 2 >= 0) {
+            if (table[a_row][a_col - 2].isEmpty && !table[a_row][a_col - 1].isEmpty) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

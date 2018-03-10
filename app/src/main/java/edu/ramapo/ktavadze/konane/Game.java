@@ -1,6 +1,10 @@
 package edu.ramapo.ktavadze.konane;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Scanner;
+import java.util.Stack;
 
 /**
  * Game class.
@@ -15,6 +19,8 @@ public class Game {
     public boolean isCombo;
     public int row;
     public int col;
+    public String search;
+    public ArrayList<Move> moves;
 
     /**
      Game class constructor.
@@ -26,6 +32,8 @@ public class Game {
         turn = 'B';
         isMoving = false;
         isCombo = false;
+        search = "DFS";
+        setSearch(search);
     }
 
     /**
@@ -115,6 +123,7 @@ public class Game {
 
     /**
      Processes each pass command.
+     @return String value depending on who is passing.
      */
     public String processPass() {
         isMoving = false;
@@ -123,12 +132,14 @@ public class Game {
         // Black passes.
         if (turn == 'B') {
             turn = 'W';
+            setSearch(search);
 
             return "Black passes!";
         }
         // White passes.
         else {
             turn = 'B';
+            setSearch(search);
 
             return "White passes!";
         }
@@ -209,6 +220,7 @@ public class Game {
         // Reset move.
         isMoving = false;
         isCombo = false;
+        setSearch(search);
     }
 
     /**
@@ -234,5 +246,223 @@ public class Game {
             return "White wins!";
         }
         return "It's a tie!";
+    }
+
+    /**
+     Sets the search value and updates the moves accordingly.
+     @param a_search - String search value to be set.
+     @return String value depending on the search.
+     */
+    public String setSearch(String a_search) {
+        search = a_search;
+        switch (a_search) {
+            case "DFS":
+                updateMovesDFS();
+                break;
+            case "BFS":
+                updateMovesBFS();
+                break;
+        }
+        return "Search set to " + a_search;
+    }
+
+    /**
+     Updates the moves using DFS.
+     */
+    public void updateMovesDFS() {
+        // Populate starting stack.
+        Stack<Move> s = new Stack<>();
+        Player player = turn == 'B' ? black : white;
+        for (int i = Board.SIZE - 1; i >= 0; i--) {
+            for (int j = Board.SIZE - 1; j >= 0; j--) {
+                if (player.canMove(i, j)) {
+                    Square square = board.table[i][j];
+                    s.push(new Move(square, square, square, 0));
+                }
+            }
+        }
+
+        // Populate moves list.
+        moves = new ArrayList<>();
+        while (!s.empty()) {
+            Move move = s.pop();
+            Square start = move.start;
+            Square prev = move.prev;
+            Square end = move.end;
+
+            Integer score = move.score;
+            if (score == 9) break;
+
+            // Check move up.
+            if (player.canMoveUp(end.row, end.col)) {
+                Square up = board.table[end.row - 2][end.col];
+                Move moveUp = new Move(start, end, up, score + 1);
+                if (!prev.equals(up) && !moves.contains(moveUp)) {
+                    // Add move up to moves list.
+                    moves.add(moveUp);
+                    if (player.canMoveUp(up.row, up.col) ||
+                            player.canMoveRight(up.row, up.col) ||
+                            player.canMoveLeft(up.row, up.col)) {
+                        // Add moves to stack.
+                        s.push(move);
+                        s.push(moveUp);
+                        continue;
+                    }
+                }
+            }
+            // Check move right.
+            if (player.canMoveRight(end.row, end.col)) {
+                Square right = board.table[end.row][end.col + 2];
+                Move moveRight = new Move(start, end, right, score + 1);
+                if (!prev.equals(right) && !moves.contains(moveRight)) {
+                    // Add move right to moves list.
+                    moves.add(moveRight);
+                    if (player.canMoveUp(right.row, right.col) ||
+                            player.canMoveRight(right.row, right.col) ||
+                            player.canMoveDown(right.row, right.col)) {
+                        // Add moves to stack.
+                        s.push(move);
+                        s.push(moveRight);
+                        continue;
+                    }
+                }
+            }
+            // Check move down.
+            if (player.canMoveDown(end.row, end.col)) {
+                Square down = board.table[end.row + 2][end.col];
+                Move moveDown = new Move(start, end, down, score + 1);
+                if (!prev.equals(down) && !moves.contains(moveDown)) {
+                    // Add move down to moves list.
+                    moves.add(moveDown);
+                    if (player.canMoveRight(down.row, down.col) ||
+                            player.canMoveDown(down.row, down.col) ||
+                            player.canMoveLeft(down.row, down.col)) {
+                        // Add moves to stack.
+                        s.push(move);
+                        s.push(moveDown);
+                        continue;
+                    }
+                }
+            }
+            // Check move left.
+            if (player.canMoveLeft(end.row, end.col)) {
+                Square left = board.table[end.row][end.col - 2];
+                Move moveLeft = new Move(start, end, left, score + 1);
+                if (!prev.equals(left) && !moves.contains(moveLeft)) {
+                    // Add move left to moves list.
+                    moves.add(moveLeft);
+                    if (player.canMoveUp(left.row, left.col) ||
+                            player.canMoveDown(left.row, left.col) ||
+                            player.canMoveLeft(left.row, left.col)) {
+                        // Add moves to stack.
+                        s.push(move);
+                        s.push(moveLeft);
+                        continue;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     Updates the moves using BFS.
+     */
+    public void updateMovesBFS() {
+        // Populate starting queue.
+        Queue<Move> q = new LinkedList<>();
+        Player player = turn == 'B' ? black : white;
+        for (int i = 0; i < Board.SIZE; i++) {
+            for (int j = 0; j < Board.SIZE; j++) {
+                if (player.canMove(i, j)) {
+                    Square square = board.table[i][j];
+                    Move move = new Move(square, square, square, 0);
+                    q.add(move);
+                }
+            }
+        }
+
+        // Populate moves list.
+        moves = new ArrayList<>();
+        while (q.peek() != null) {
+            Move move = q.remove();
+            Square start = move.start;
+            Square prev = move.prev;
+            Square end = move.end;
+
+            Integer score = move.score;
+            if (score == 9) break;
+
+            // Check move up.
+            if (player.canMoveUp(end.row, end.col)) {
+                Square up = board.table[end.row - 2][end.col];
+                Move moveUp = new Move(start, end, up, score + 1);
+                if (!prev.equals(up)) {
+                    // Add move up to moves list.
+                    moves.add(moveUp);
+                    if (player.canMoveUp(up.row, up.col) ||
+                            player.canMoveRight(up.row, up.col) ||
+                            player.canMoveLeft(up.row, up.col)) {
+                        // Add move up to queue.
+                        q.add(moveUp);
+                    }
+                }
+            }
+            // Check move right.
+            if (player.canMoveRight(end.row, end.col)) {
+                Square right = board.table[end.row][end.col + 2];
+                Move moveRight = new Move(start, end, right, score + 1);
+                if (!prev.equals(right)) {
+                    // Add move right to moves list.
+                    moves.add(moveRight);
+                    if (player.canMoveUp(right.row, right.col) ||
+                            player.canMoveRight(right.row, right.col) ||
+                            player.canMoveDown(right.row, right.col)) {
+                        // Add move right to queue.
+                        q.add(moveRight);
+                    }
+                }
+            }
+            // Check move down.
+            if (player.canMoveDown(end.row, end.col)) {
+                Square down = board.table[end.row + 2][end.col];
+                Move moveDown = new Move(start, end, down, score + 1);
+                if (!prev.equals(down)) {
+                    // Add move down to moves list.
+                    moves.add(moveDown);
+                    if (player.canMoveRight(down.row, down.col) ||
+                            player.canMoveDown(down.row, down.col) ||
+                            player.canMoveLeft(down.row, down.col)) {
+                        // Add move down to queue.
+                        q.add(moveDown);
+                    }
+                }
+            }
+            // Check move left.
+            if (player.canMoveLeft(end.row, end.col)) {
+                Square left = board.table[end.row][end.col - 2];
+                Move moveLeft = new Move(start, end, left, score + 1);
+                if (!prev.equals(left)) {
+                    // Add move left to moves list.
+                    moves.add(moveLeft);
+                    if (player.canMoveUp(left.row, left.col) ||
+                            player.canMoveDown(left.row, left.col) ||
+                            player.canMoveLeft(left.row, left.col)) {
+                        // Add move left to queue.
+                        q.add(moveLeft);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     Processes each next command.
+     @return Move object depending on next available move.
+     */
+    public Move processNext() {
+        if (moves.isEmpty()) {
+            setSearch(search);
+        }
+        return moves.remove(0);
     }
 }

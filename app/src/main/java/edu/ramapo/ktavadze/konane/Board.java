@@ -32,8 +32,10 @@ public class Board {
         Square square1 = table[a_r1][a_c1];
         Square square2 = table[a_r2][a_c2];
 
-        table[a_r1][a_c1] = square2;
-        table[a_r2][a_c2] = square1;
+        square2.color = square1.color;
+        square2.isEmpty = false;
+
+        square1.empty();
     }
 
     /**
@@ -45,17 +47,17 @@ public class Board {
                 // Populate even rows.
                 if (i % 2 == 0) {
                     if (j % 2 == 0) {
-                        table[i][j] = new Square('B');
+                        table[i][j] = new Square('B', i, j);
                     } else {
-                        table[i][j] = new Square('W');
+                        table[i][j] = new Square('W', i, j);
                     }
                 }
                 // Populate odd rows.
                 else {
                     if (j % 2 == 0) {
-                        table[i][j] = new Square('W');
+                        table[i][j] = new Square('W', i, j);
                     } else {
-                        table[i][j] = new Square('B');
+                        table[i][j] = new Square('B', i, j);
                     }
                 }
             }

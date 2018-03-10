@@ -1,17 +1,20 @@
 /*
 ************************************************************
 * Name:  Konstantine Tavadze                               *
-* Project:  Project 1 - Konane                             *
+* Project:  Konane                             *
 * Class:  CMPS331 - Artificial Intelligence                *
-* Date:  02/02/2018                                        *
+* Date:  03/02/2018                                        *
 ************************************************************
 */
 package edu.ramapo.ktavadze.konane;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -19,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -28,6 +32,7 @@ import java.io.OutputStreamWriter;
 public class MainActivity extends AppCompatActivity {
 
     private Game game = new Game();
+    private Move hint = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,11 +51,9 @@ public class MainActivity extends AppCompatActivity {
 
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_settings:
-                // TODO: Settings
-                return true;
             case R.id.action_search:
-                // TODO: Search
+                // Search.
+                respondToSearch();
                 return true;
             case R.id.action_save:
                 // Save game.
@@ -63,6 +66,66 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_restart:
                 // Restart game.
                 respondToRestart();
+                return true;
+            case R.id.action_preset:
+                // Load preset.
+                game.setState("Black: 6\n" +
+                        "White: 4\n" +
+                        "Board:\n" +
+                        "B W B W B W\n" +
+                        "W B O B O B\n" +
+                        "B W O W B W\n" +
+                        "O B O O O O\n" +
+                        "B W B O O W\n" +
+                        "W B W O O B\n" +
+                        "Next Player: White");
+
+                displayMessage("Preset loaded!");
+
+                // Update user interface.
+                displayBoard();
+                displayTurn();
+                displayScores();
+                return true;
+            case R.id.action_case1:
+                // Load case 1.
+                game.setState("Black: 0\n" +
+                        "White: 0\n" +
+                        "Board:\n" +
+                        "O W O W O O\n" +
+                        "W O W O W O\n" +
+                        "O W B W O O\n" +
+                        "W O W O W O\n" +
+                        "O W O W O O\n" +
+                        "O O O O O O\n" +
+                        "Next Player: Black");
+
+                displayMessage("Case 1 loaded!");
+
+                // Update user interface.
+                displayBoard();
+                displayTurn();
+                displayScores();
+                return true;
+            case R.id.action_case2:
+                // Load case 2.
+                game.setState("Black: 0\n" +
+                        "White: 0\n" +
+                        "Board:\n" +
+                        "O W O O O O\n" +
+                        "O O W O W O\n" +
+                        "O W B W O O\n" +
+                        "W O W O O O\n" +
+                        "O W O O O W\n" +
+                        "W O W O W O\n" +
+                        "Next Player: Black");
+
+                displayMessage("Case 2 loaded!");
+
+                // Update user interface.
+                displayBoard();
+                displayTurn();
+                displayScores();
                 return true;
             default:
                 // Invoke superclass to handle unrecognized action.
@@ -281,7 +344,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      Responds to the move clicks and updates the view accordingly.
-     @param view - View to be listened to and modified.
+     @param view - View to be listened to.
      */
     public void respondToMove(View view) {
         String tag = (String) view.getTag();
@@ -306,10 +369,10 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      Responds to the pass clicks and updates the view accordingly.
-     @param view - View to be listened to and modified.
+     @param view - View to be listened to.
      */
     public void respondToPass(View view) {
-        // Process move.
+        // Process pass.
         displayMessage(game.processPass());
 
         // Update user interface.
@@ -383,6 +446,76 @@ public class MainActivity extends AppCompatActivity {
         displayBoard();
         displayTurn();
         displayScores();
+    }
+
+    /**
+     Responds to the search action and displays the search dialog.
+     */
+    public void respondToSearch() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.search_dialog, null);
+        dialogBuilder.setView(dialogView);
+        dialogBuilder.setTitle(R.string.dialog_title);
+
+        final Spinner spn = (Spinner) dialogView.findViewById(R.id.spinner);
+        dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String spnValue = spn.getSelectedItem().toString();
+                displayMessage(game.setSearch(spnValue));
+            }
+        });
+        dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // TODO: Cancel.
+            }
+        });
+
+        AlertDialog searchDialog = dialogBuilder.create();
+        searchDialog.show();
+    }
+
+    /**
+     Responds to the next clicks and updates the view accordingly.
+     @param view - View to be listened to.
+     */
+    public void respondToNext(View view) {
+        // Process next.
+        Move next = game.processNext();
+
+        // Clear current hint.
+        LinearLayout main = findViewById(R.id.main);
+        if (hint != null) {
+            String startTag = "b" + hint.start.row + hint.start.col;
+            String endTag = "b" + hint.end.row + hint.end.col;
+
+            Button startBtn = main.findViewWithTag(startTag);
+            Button endBtn = main.findViewWithTag(endTag);
+
+            if (hint.start.color == 'B') {
+                startBtn.setBackgroundColor(Color.parseColor("#000000"));
+                endBtn.setBackgroundColor(Color.parseColor("#000000"));
+            }
+            else {
+                startBtn.setBackgroundColor(Color.parseColor("#FFFFFF"));
+                endBtn.setBackgroundColor(Color.parseColor("#FFFFFF"));
+            }
+        }
+
+        // Display next hint.
+        String startTag = "b" + next.start.row + next.start.col;
+        String endTag = "b" + next.end.row + next.end.col;
+
+        Button startBtn = main.findViewWithTag(startTag);
+        Button endBtn = main.findViewWithTag(endTag);
+
+        startBtn.setBackgroundColor(Color.parseColor("#FFFF00"));
+        endBtn.setBackgroundColor(Color.parseColor("#FFFF00"));
+
+        // Preview score.
+        displayMessage("Score: +" + next.score);
+
+        hint = next;
     }
 
 }
