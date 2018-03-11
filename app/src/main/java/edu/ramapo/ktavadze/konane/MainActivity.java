@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import java.io.FileInputStream;
@@ -51,9 +52,9 @@ public class MainActivity extends AppCompatActivity {
 
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_search:
+            case R.id.action_settings:
                 // Search.
-                respondToSearch();
+                respondToSettings();
                 return true;
             case R.id.action_save:
                 // Save game.
@@ -456,16 +457,40 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     Responds to the search action and displays the search dialog.
+     Responds to the settings action and displays the settings dialog.
      */
-    public void respondToSearch() {
+    public void respondToSettings() {
+        // Build settings dialog.
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
-        final View dialogView = inflater.inflate(R.layout.search_dialog, null);
+        final View dialogView = inflater.inflate(R.layout.settings_dialog, null);
         dialogBuilder.setView(dialogView);
-        dialogBuilder.setTitle(R.string.dialog_title);
+        dialogBuilder.setTitle(R.string.settings_title);
 
+        // Select current mode.
+        String mode = "Single";
+        final RadioButton rb1 =(RadioButton) dialogView.findViewById(R.id.single);
+        final RadioButton rb2 =(RadioButton) dialogView.findViewById(R.id.multi);
+        if (mode.equalsIgnoreCase("Single")) {
+            rb1.setChecked(true);
+        }
+        else {
+            rb2.setChecked(true);
+        }
+
+        // Select current search.
         final Spinner spn = (Spinner) dialogView.findViewById(R.id.spinner);
+        if (game.search.equals("Depth")) {
+            spn.setSelection(0);
+        }
+        else if (game.search.equals("Breadth")) {
+            spn.setSelection(1);
+        }
+        else {
+            spn.setSelection(2);
+        }
+
+        // Define responses.
         dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String spnValue = spn.getSelectedItem().toString();
@@ -478,8 +503,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        AlertDialog searchDialog = dialogBuilder.create();
-        searchDialog.show();
+        // Show settings dialog.
+        AlertDialog settingsDialog = dialogBuilder.create();
+        settingsDialog.show();
     }
 
     /**

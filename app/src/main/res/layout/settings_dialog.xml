@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <EditText android:id="@+id/editText"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:padding="25dp"
+            android:inputType="number"
+            android:hint="@string/settings_guess_hint"/>
+
+        <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="25dp"
+            android:orientation="horizontal">
+
+            <RadioButton android:id="@+id/single"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_single"/>
+
+            <RadioButton android:id="@+id/multi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_multi"/>
+        </RadioGroup>
+
+        <Spinner android:id="@+id/spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="25dp"
+            android:entries="@array/settings_search_select" />
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>

@@ -32,7 +32,7 @@ public class Game {
         turn = 'B';
         isMoving = false;
         isCombo = false;
-        search = "DFS";
+        search = "Best";
         setSearch(search);
     }
 
@@ -256,20 +256,23 @@ public class Game {
     public String setSearch(String a_search) {
         search = a_search;
         switch (a_search) {
-            case "DFS":
-                updateMovesDFS();
+            case "Depth":
+                updateMovesDepth();
                 break;
-            case "BFS":
-                updateMovesBFS();
+            case "Breadth":
+                updateMovesBreadth();
+                break;
+            case "Best":
+                updateMovesBest();
                 break;
         }
         return "Search set to " + a_search;
     }
 
     /**
-     Updates the moves using DFS.
+     Updates the moves using Depth First Search.
      */
-    public void updateMovesDFS() {
+    public void updateMovesDepth() {
         // Populate starting stack.
         Stack<Move> s = new Stack<>();
         Player player = turn == 'B' ? black : white;
@@ -365,9 +368,9 @@ public class Game {
     }
 
     /**
-     Updates the moves using BFS.
+     Updates the moves using Breadth First Search.
      */
-    public void updateMovesBFS() {
+    public void updateMovesBreadth() {
         // Populate starting queue.
         Queue<Move> q = new LinkedList<>();
         Player player = turn == 'B' ? black : white;
@@ -444,6 +447,97 @@ public class Game {
                 if (!prev.equals(left)) {
                     // Add move left to moves list.
                     moves.add(moveLeft);
+                    if (player.canMoveUp(left.row, left.col) ||
+                            player.canMoveDown(left.row, left.col) ||
+                            player.canMoveLeft(left.row, left.col)) {
+                        // Add move left to queue.
+                        q.add(moveLeft);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     Updates the moves using Best First Search.
+     */
+    public void updateMovesBest() {
+        // Populate starting queue.
+        Queue<Move> q = new LinkedList<>();
+        Player player = turn == 'B' ? black : white;
+        for (int i = 0; i < Board.SIZE; i++) {
+            for (int j = 0; j < Board.SIZE; j++) {
+                if (player.canMove(i, j)) {
+                    Square square = board.table[i][j];
+                    Move move = new Move(square, square, square, 0);
+                    q.add(move);
+                }
+            }
+        }
+
+        // Populate moves list.
+        moves = new ArrayList<>();
+        while (q.peek() != null) {
+            Move move = q.remove();
+            Square start = move.start;
+            Square prev = move.prev;
+            Square end = move.end;
+
+            Integer score = move.score;
+            if (score == 9) break;
+
+            // Check move up.
+            if (player.canMoveUp(end.row, end.col)) {
+                Square up = board.table[end.row - 2][end.col];
+                Move moveUp = new Move(start, end, up, score + 1);
+                if (!prev.equals(up)) {
+                    // Add move up to moves list.
+                    moves.add(0, moveUp);
+                    if (player.canMoveUp(up.row, up.col) ||
+                            player.canMoveRight(up.row, up.col) ||
+                            player.canMoveLeft(up.row, up.col)) {
+                        // Add move up to queue.
+                        q.add(moveUp);
+                    }
+                }
+            }
+            // Check move right.
+            if (player.canMoveRight(end.row, end.col)) {
+                Square right = board.table[end.row][end.col + 2];
+                Move moveRight = new Move(start, end, right, score + 1);
+                if (!prev.equals(right)) {
+                    // Add move right to moves list.
+                    moves.add(0, moveRight);
+                    if (player.canMoveUp(right.row, right.col) ||
+                            player.canMoveRight(right.row, right.col) ||
+                            player.canMoveDown(right.row, right.col)) {
+                        // Add move right to queue.
+                        q.add(moveRight);
+                    }
+                }
+            }
+            // Check move down.
+            if (player.canMoveDown(end.row, end.col)) {
+                Square down = board.table[end.row + 2][end.col];
+                Move moveDown = new Move(start, end, down, score + 1);
+                if (!prev.equals(down)) {
+                    // Add move down to moves list.
+                    moves.add(0, moveDown);
+                    if (player.canMoveRight(down.row, down.col) ||
+                            player.canMoveDown(down.row, down.col) ||
+                            player.canMoveLeft(down.row, down.col)) {
+                        // Add move down to queue.
+                        q.add(moveDown);
+                    }
+                }
+            }
+            // Check move left.
+            if (player.canMoveLeft(end.row, end.col)) {
+                Square left = board.table[end.row][end.col - 2];
+                Move moveLeft = new Move(start, end, left, score + 1);
+                if (!prev.equals(left)) {
+                    // Add move left to moves list.
+                    moves.add(0, moveLeft);
                     if (player.canMoveUp(left.row, left.col) ||
                             player.canMoveDown(left.row, left.col) ||
                             player.canMoveLeft(left.row, left.col)) {

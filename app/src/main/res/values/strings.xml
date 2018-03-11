@@ -1,15 +1,19 @@
 <resources>
     <string name="app_name">Konane</string>
-    <string name="action_search">Search</string>
+    <string name="action_settings">Settings</string>
     <string name="action_save">Save</string>
     <string name="action_load">Load</string>
     <string name="action_restart">Restart</string>
     <string name="action_preset">Preset</string>
     <string name="action_case1">Case 1</string>
     <string name="action_case2">Case 2</string>
-    <string name="dialog_title">Search</string>
-    <string-array name="search_select">
-        <item>DFS</item>
-        <item>BFS</item>
+    <string name="settings_title">Settings</string>
+    <string name="settings_single">Single</string>
+    <string name="settings_multi">Multi</string>
+    <string name="settings_guess_hint">Guess 1 or 2</string>
+    <string-array name="settings_search_select">
+        <item>Depth</item>
+        <item>Breadth</item>
+        <item>Best</item>
     </string-array>
 </resources>
