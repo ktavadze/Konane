@@ -32,7 +32,7 @@ import java.io.OutputStreamWriter;
 public class MainActivity extends AppCompatActivity {
 
     private Game game = new Game();
-    private String hint = null;
+    private String hint = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
                 displayBoard();
                 displayTurn();
                 displayScores();
+                clearHint();
                 return true;
             case R.id.action_case1:
                 // Load case 1.
@@ -106,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
                 displayBoard();
                 displayTurn();
                 displayScores();
+                clearHint();
                 return true;
             case R.id.action_case2:
                 // Load case 2.
@@ -126,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
                 displayBoard();
                 displayTurn();
                 displayScores();
+                clearHint();
                 return true;
             default:
                 // Invoke superclass to handle unrecognized action.
@@ -359,6 +362,7 @@ public class MainActivity extends AppCompatActivity {
         displayBoard();
         displayTurn();
         displayScores();
+        clearHint();
 
         // Check if game is over.
         if (game.isOver()) {
@@ -377,6 +381,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Update user interface.
         displayTurn();
+        clearHint();
     }
 
     /**
@@ -431,6 +436,7 @@ public class MainActivity extends AppCompatActivity {
         displayBoard();
         displayTurn();
         displayScores();
+        clearHint();
     }
 
     /**
@@ -446,6 +452,7 @@ public class MainActivity extends AppCompatActivity {
         displayBoard();
         displayTurn();
         displayScores();
+        clearHint();
     }
 
     /**
@@ -481,14 +488,34 @@ public class MainActivity extends AppCompatActivity {
      */
     public void respondToNext(View view) {
         // Process next.
-        Move next = game.processNext();
+        String next = game.processNext();
 
         // Clear current hint.
+        clearHint();
+
+        // Display next hint.
+        String startTag = "b" + next.charAt(1) + next.charAt(2);
+        String endTag = "b" + next.charAt(3) + next.charAt(4);
+
         LinearLayout main = findViewById(R.id.main);
-        if (hint != null) {
+        Button startBtn = main.findViewWithTag(startTag);
+        Button endBtn = main.findViewWithTag(endTag);
+
+        startBtn.setBackgroundColor(Color.parseColor("#FFFF00"));
+        endBtn.setBackgroundColor(Color.parseColor("#FFFF00"));
+
+        // Preview score.
+        displayMessage("Score: +" + next.charAt(5));
+
+        hint = next;
+    }
+
+    public void clearHint() {
+        if (!hint.equals("")) {
             String startTag = "b" + hint.charAt(1) + hint.charAt(2);
             String endTag = "b" + hint.charAt(3) + hint.charAt(4);
 
+            LinearLayout main = findViewById(R.id.main);
             Button startBtn = main.findViewWithTag(startTag);
             Button endBtn = main.findViewWithTag(endTag);
 
@@ -501,21 +528,6 @@ public class MainActivity extends AppCompatActivity {
                 endBtn.setBackgroundColor(Color.parseColor("#FFFFFF"));
             }
         }
-
-        // Display next hint.
-        String startTag = "b" + next.start.row + next.start.col;
-        String endTag = "b" + next.end.row + next.end.col;
-
-        Button startBtn = main.findViewWithTag(startTag);
-        Button endBtn = main.findViewWithTag(endTag);
-
-        startBtn.setBackgroundColor(Color.parseColor("#FFFF00"));
-        endBtn.setBackgroundColor(Color.parseColor("#FFFF00"));
-
-        // Preview score.
-        displayMessage("Score: +" + next.score);
-
-        hint = "" + next.start.color + next.start.row + next.start.col + next.end.row + next.end.col;
     }
 
 }

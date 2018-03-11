@@ -457,12 +457,34 @@ public class Game {
 
     /**
      Processes each next command.
-     @return Move object depending on next available move.
+     @return String value depending on next available move.
      */
-    public Move processNext() {
+    public String processNext() {
+        // Check if game is over.
+        if (isOver()) {
+            return "W05500";
+        }
+
+        // Check if moves is empty.
         if (moves.isEmpty()) {
             setSearch(search);
+            if (moves.isEmpty()) {
+                return "W05500";
+            }
         }
-        return moves.remove(0);
+
+        Move next = moves.remove(0);
+
+        // Check move color.
+        if (turn != next.start.color) {
+            setSearch(search);
+            if (moves.isEmpty()) {
+                return "W05500";
+            }
+            next = moves.remove(0);
+        }
+
+        return "" + next.start.color + next.start.row + next.start.col +
+                next.end.row + next.end.col + next.score;
     }
 }
