@@ -93,24 +93,24 @@ public class Player {
         if (table[a_r1][a_c1].color == color && !table[a_r1][a_c1].isEmpty &&
                 table[a_r2][a_c2].isEmpty) {
             // Check vertical moves.
-            if (a_r1 == a_r2) {
+            if (a_c1 == a_c2) {
                 // Check move up.
-                if (a_c1 - 2 == a_c2 && !table[a_r1][a_c1 - 1].isEmpty) {
+                if (a_r1 - 2 == a_r2 && canMoveUp(a_r1, a_c1)) {
                     return true;
                 }
                 // Check move down.
-                if (a_c1 + 2 == a_c2 && !table[a_r1][a_c1 + 1].isEmpty) {
+                if (a_r1 + 2 == a_r2 && canMoveDown(a_r1, a_c1)) {
                     return true;
                 }
             }
             // Check horizontal moves.
-            if (a_c1 == a_c2) {
+            if (a_r1 == a_r2) {
                 // Check move right.
-                if (a_r1 + 2 == a_r2 && !table[a_r1 + 1][a_c1].isEmpty) {
+                if (a_c1 + 2 == a_c2 && canMoveRight(a_r1, a_c1)) {
                     return true;
                 }
                 // Check move left.
-                if (a_r1 - 2 == a_r2 && !table[a_r1 - 1][a_c1].isEmpty) {
+                if (a_c1 - 2 == a_c2 && canMoveLeft(a_r1, a_c1)) {
                     return true;
                 }
             }
