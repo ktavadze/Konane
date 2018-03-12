@@ -9,23 +9,45 @@
         android:gravity="center"
         android:orientation="vertical">
 
-        <EditText android:id="@+id/editText"
+        <EditText android:id="@+id/guess"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:padding="25dp"
             android:inputType="number"
             android:hint="@string/settings_guess_hint"/>
 
-        <RadioGroup
+        <RadioGroup android:id="@+id/size"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="25dp"
             android:orientation="horizontal">
 
-            <RadioButton android:id="@+id/single"
+            <RadioButton android:id="@+id/six"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/settings_single"/>
+                android:text="@string/settings_six"/>
+
+            <RadioButton android:id="@+id/eight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_eight"/>
+
+            <RadioButton android:id="@+id/ten"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_ten"/>
+        </RadioGroup>
+
+        <RadioGroup android:id="@+id/mode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="25dp"
+            android:orientation="horizontal">
+
+            <RadioButton android:id="@+id/solo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_solo"/>
 
             <RadioButton android:id="@+id/multi"
                 android:layout_width="wrap_content"
@@ -33,7 +55,7 @@
                 android:text="@string/settings_multi"/>
         </RadioGroup>
 
-        <Spinner android:id="@+id/spinner"
+        <Spinner android:id="@+id/search"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="25dp"

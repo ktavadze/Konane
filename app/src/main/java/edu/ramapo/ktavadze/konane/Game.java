@@ -251,9 +251,8 @@ public class Game {
     /**
      Sets the search value and updates the moves accordingly.
      @param a_search - String search value to be set.
-     @return String value depending on the search.
      */
-    public String setSearch(String a_search) {
+    public void setSearch(String a_search) {
         search = a_search;
         switch (a_search) {
             case "Depth":
@@ -266,7 +265,6 @@ public class Game {
                 updateMovesBest();
                 break;
         }
-        return "Search set to " + a_search;
     }
 
     /**
