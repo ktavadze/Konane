@@ -32,9 +32,29 @@ public class Board {
         Square square1 = table[a_r1][a_c1];
         Square square2 = table[a_r2][a_c2];
 
+        // Update destination.
         square2.color = square1.color;
         square2.isEmpty = false;
 
+        // Update midpoint.
+        if (a_r1 == a_r2) {
+            if (a_c1 - 2 == a_c2) {
+                table[a_r1][a_c1 - 1].empty();
+            }
+            else if (a_c1 + 2 == a_c2) {
+                table[a_r1][a_c1 + 1].empty();
+            }
+        }
+        else if (a_c1 == a_c2) {
+            if (a_r1 + 2 == a_r2) {
+                table[a_r1 + 1][a_c1].empty();
+            }
+            else if (a_r1 - 2 == a_r2) {
+                table[a_r1 - 1][a_c1].empty();
+            }
+        }
+
+        // Update origin.
         square1.empty();
     }
 

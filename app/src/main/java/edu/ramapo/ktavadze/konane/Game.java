@@ -76,7 +76,8 @@ public class Game {
         else {
             // Black moves.
             if (turn == 'B' && black.canMove(row, col, a_row, a_col)) {
-                black.makeMove(row, col, a_row, a_col);
+                board.move(row, col, a_row, a_col);
+                black.score++;
 
                 if (black.canMove(a_row, a_col)) {
                     isCombo = true;
@@ -95,7 +96,8 @@ public class Game {
             }
             // White moves.
             else if (turn == 'W' && white.canMove(row, col, a_row, a_col)) {
-                white.makeMove(row, col, a_row, a_col);
+                board.move(row, col, a_row, a_col);
+                white.score++;
 
                 if (white.canMove(a_row, a_col)) {
                     isCombo = true;
