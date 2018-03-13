@@ -7,14 +7,15 @@ import java.util.Random;
  */
 
 public class Board {
-    public static final int SIZE = 6;
+    public int size;
     public Square[][] table;
 
     /**
      Board class constructor.
      */
-    public Board() {
-        table = new Square[SIZE][SIZE];
+    public Board(int a_size) {
+        size = a_size;
+        table = new Square[size][size];
 
         populate();
 
@@ -62,8 +63,8 @@ public class Board {
      Populates the entire table with the appropriate pattern of squares.
      */
     private void populate() {
-        for (int i = 0; i < SIZE; i++) {
-            for (int j = 0; j < SIZE; j++) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
                 // Populate even rows.
                 if (i % 2 == 0) {
                     if (j % 2 == 0) {
@@ -90,16 +91,16 @@ public class Board {
     private void emptyRandomTwo() {
         Random rand = new Random();
 
-        int randRow = rand.nextInt(SIZE);
-        int randCol = rand.nextInt(SIZE);
+        int randRow = rand.nextInt(size);
+        int randCol = rand.nextInt(size);
 
         // Empty the first square
         char emptied = table[randRow][randCol].color;
         table[randRow][randCol].empty();
 
         while (true) {
-            randRow = rand.nextInt(SIZE);
-            randCol = rand.nextInt(SIZE);
+            randRow = rand.nextInt(size);
+            randCol = rand.nextInt(size);
 
             // Empty the second square.
             if (table[randRow][randCol].color != emptied && !table[randRow][randCol].isEmpty) {

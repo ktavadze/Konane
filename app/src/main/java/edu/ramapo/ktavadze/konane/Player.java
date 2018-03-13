@@ -23,8 +23,8 @@ public class Player {
      */
     public boolean canMove() {
         Square[][] table = Game.board.table;
-        for (int i = 0; i < Board.SIZE; i++) {
-            for (int j = 0; j < Board.SIZE; j++) {
+        for (int i = 0; i < Game.board.size; i++) {
+            for (int j = 0; j < Game.board.size; j++) {
                 // Check if square matches player's color and is not empty.
                 if (table[i][j].color == color && !table[i][j].isEmpty) {
                     // Check if square can move up.
@@ -144,7 +144,7 @@ public class Player {
     public boolean canMoveRight(int a_row, int a_col) {
         Square[][] table = Game.board.table;
         // Check if square can move right.
-        if (a_col + 2 < Board.SIZE) {
+        if (a_col + 2 < Game.board.size) {
             if (table[a_row][a_col + 2].isEmpty && !table[a_row][a_col + 1].isEmpty) {
                 return true;
             }
@@ -161,7 +161,7 @@ public class Player {
     public boolean canMoveDown(int a_row, int a_col) {
         Square[][] table = Game.board.table;
         // Check if square can move down.
-        if (a_row + 2 < Board.SIZE) {
+        if (a_row + 2 < Game.board.size) {
             if (table[a_row + 2][a_col].isEmpty && !table[a_row + 1][a_col].isEmpty) {
                 return true;
             }

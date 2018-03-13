@@ -25,8 +25,8 @@ public class Game {
     /**
      Game class constructor.
      */
-    public Game() {
-        board = new Board();
+    public Game(int a_size) {
+        board = new Board(a_size);
         black = new Player('B');
         white = new Player('W');
         turn = 'B';
@@ -53,7 +53,7 @@ public class Game {
 
                 isMoving = true;
 
-                return "Moving " + (row + 1) + (col + 1) + "...";
+                return "Moving " + row + col + "...";
             }
             // Black passes.
             else if (turn == 'B' && !black.canMove()) {
@@ -92,7 +92,7 @@ public class Game {
                     turn = 'W';
                 }
 
-                return "...to " + (a_row + 1) + (a_col + 1);
+                return "...to " + a_row + a_col;
             }
             // White moves.
             else if (turn == 'W' && white.canMove(row, col, a_row, a_col)) {
@@ -112,7 +112,7 @@ public class Game {
                     turn = 'B';
                 }
 
-                return "...to " + (a_row + 1) + (a_col + 1);
+                return "...to " + a_row + a_col;
             }
             // Illegal move.
             else {
@@ -156,8 +156,8 @@ public class Game {
         String state = "Black: " + black.score + "\nWhite: " + white.score + "\nBoard:\n";
 
         // Get board.
-        for (int i = 0; i < Board.SIZE; i++) {
-            for (int j = 0; j < Board.SIZE; j++) {
+        for (int i = 0; i < board.size; i++) {
+            for (int j = 0; j < board.size; j++) {
                 state += board.table[i][j].color + " ";
             }
             state += "\n";
@@ -199,7 +199,7 @@ public class Game {
                     break;
                 // Set board.
                 case 4:case 5:case 6:case 7:case 8:case 9:
-                    for (int i = 0, j = 0; j < board.SIZE; i += 2, j++) {
+                    for (int i = 0, j = 0; j < board.size; i += 2, j++) {
                         if (line.charAt(i) == 'O') {
                             board.table[row][j].empty();
                         }
@@ -276,8 +276,8 @@ public class Game {
         // Populate starting stack.
         Stack<Move> s = new Stack<>();
         Player player = turn == 'B' ? black : white;
-        for (int i = Board.SIZE - 1; i >= 0; i--) {
-            for (int j = Board.SIZE - 1; j >= 0; j--) {
+        for (int i = board.size - 1; i >= 0; i--) {
+            for (int j = board.size - 1; j >= 0; j--) {
                 if (player.canMove(i, j)) {
                     Square square = board.table[i][j];
                     s.push(new Move(square, square, square, 0));
@@ -374,8 +374,8 @@ public class Game {
         // Populate starting queue.
         Queue<Move> q = new LinkedList<>();
         Player player = turn == 'B' ? black : white;
-        for (int i = 0; i < Board.SIZE; i++) {
-            for (int j = 0; j < Board.SIZE; j++) {
+        for (int i = 0; i < board.size; i++) {
+            for (int j = 0; j < board.size; j++) {
                 if (player.canMove(i, j)) {
                     Square square = board.table[i][j];
                     Move move = new Move(square, square, square, 0);
@@ -465,8 +465,8 @@ public class Game {
         // Populate starting queue.
         Queue<Move> q = new LinkedList<>();
         Player player = turn == 'B' ? black : white;
-        for (int i = 0; i < Board.SIZE; i++) {
-            for (int j = 0; j < Board.SIZE; j++) {
+        for (int i = 0; i < board.size; i++) {
+            for (int j = 0; j < board.size; j++) {
                 if (player.canMove(i, j)) {
                     Square square = board.table[i][j];
                     Move move = new Move(square, square, square, 0);

@@ -34,9 +34,10 @@ import java.io.OutputStreamWriter;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Game game = new Game();
+    private int size = 6;
+    private char mode = 'S';
+    private Game game = new Game(size);
     private String hint = "";
-    private String mode = "Solo";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,13 +145,16 @@ public class MainActivity extends AppCompatActivity {
      Generates the xml for the board.
      */
     public void generateBoard() {
-        LinearLayout main = findViewById(R.id.main);
+        LinearLayout board = findViewById(R.id.board);
+
+        // Clear main view.
+        board.removeAllViews();
 
         // Generate top column labels xml.
         generateColumnLabels();
 
         // Generate rows.
-        for (int i = 0; i < Board.SIZE; i++) {
+        for (int i = 0; i < size; i++) {
             LinearLayout row = new LinearLayout(this);
 
             // Add row layout params.
@@ -177,13 +181,13 @@ public class MainActivity extends AppCompatActivity {
             rowLabel1.setPadding(10, 0, 10, 0);
             rowLabel1.setGravity(Gravity.CENTER);
             rowLabel1.setTextSize(25);
-            rowLabel1.setText("" + (i + 1));
+            rowLabel1.setText(Integer.toString(i));
 
             // Add left label to row.
             row.addView(rowLabel1);
 
             // Generate buttons.
-            for (int j = 0; j < Board.SIZE; j++) {
+            for (int j = 0; j < size; j++) {
                 Button button = new Button(this);
 
                 // Add button layout params.
@@ -245,13 +249,13 @@ public class MainActivity extends AppCompatActivity {
             rowLabel2.setPadding(10, 0, 10, 0);
             rowLabel2.setGravity(Gravity.CENTER);
             rowLabel2.setTextSize(25);
-            rowLabel2.setText("" + (i + 1));
+            rowLabel2.setText(Integer.toString(i));
 
             // Add right label to row.
             row.addView(rowLabel2);
 
             // Add row to main.
-            main.addView(row);
+            board.addView(row);
         }
 
         // Generate bottom column labels xml.
@@ -265,7 +269,7 @@ public class MainActivity extends AppCompatActivity {
      Generates the xml for the column labels.
      */
     public void generateColumnLabels() {
-        LinearLayout main = findViewById(R.id.main);
+        LinearLayout board = findViewById(R.id.board);
 
         // Generate row of column labels.
         LinearLayout colLabels = new LinearLayout(this);
@@ -282,7 +286,7 @@ public class MainActivity extends AppCompatActivity {
         colLabels.setPadding(40,0,40,0);
 
         // Generate column labels.
-        for (int c = 1; c <= Board.SIZE; c++) {
+        for (int c = 0; c < size; c++) {
             TextView colLabel = new TextView(this);
 
             // Add column label params.
@@ -297,14 +301,14 @@ public class MainActivity extends AppCompatActivity {
             colLabel.setTextColor(Color.parseColor("#FFFFFF"));
             colLabel.setGravity(Gravity.CENTER);
             colLabel.setTextSize(25);
-            colLabel.setText("" + c);
+            colLabel.setText(Integer.toString(c));
 
             // Add label to column labels.
             colLabels.addView(colLabel);
         }
 
         // Add column labels to main.
-        main.addView(colLabels);
+        board.addView(colLabels);
     }
 
     /**
@@ -312,15 +316,15 @@ public class MainActivity extends AppCompatActivity {
      */
     public void displayBoard() {
         LinearLayout board = findViewById(R.id.main);
-        for (int i = 0; i < Board.SIZE; i++) {
-            for (int j = 0; j < Board.SIZE; j++) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
                 String tag = "b" + i + j;
                 char color = Game.board.table[i][j].color;
                 if (color == 'O') {
                     ((Button) board.findViewWithTag( tag )).setText(" ");
                 }
                 else {
-                    ((Button) board.findViewWithTag( tag )).setText("" + color);
+                    ((Button) board.findViewWithTag( tag )).setText(Character.toString(color));
                 }
             }
         }
@@ -338,15 +342,15 @@ public class MainActivity extends AppCompatActivity {
      Displays whose turn it is and whether she is moving by setting the text of the second TextView.
      */
     public void displayTurn() {
-        ((TextView) findViewById( R.id.turn )).setText("" + game.turn);
+        ((TextView) findViewById( R.id.turn )).setText(Character.toString(game.turn));
     }
 
     /**
      Displays the scores by setting the texts of the last two TextViews.
      */
     public void displayScores() {
-        ((TextView) findViewById( R.id.black )).setText("" + game.black.score);
-        ((TextView) findViewById( R.id.white )).setText("" + game.white.score);
+        ((TextView) findViewById( R.id.black )).setText(Integer.toString(game.black.score));
+        ((TextView) findViewById( R.id.white )).setText(Integer.toString(game.white.score));
     }
 
     /**
@@ -448,11 +452,12 @@ public class MainActivity extends AppCompatActivity {
      */
     public void respondToRestart() {
         // Restart game.
-        game = new Game();
+        game = new Game(size);
 
         displayMessage("Welcome!");
 
         // Update user interface.
+        generateBoard();
         displayBoard();
         displayTurn();
         displayScores();
@@ -475,7 +480,7 @@ public class MainActivity extends AppCompatActivity {
         final RadioButton sixRB = (RadioButton) dialogView.findViewById(R.id.six);
         final RadioButton eightRB = (RadioButton) dialogView.findViewById(R.id.eight);
         final RadioButton tenRB = (RadioButton) dialogView.findViewById(R.id.ten);
-        switch (game.board.SIZE) {
+        switch (Game.board.size) {
             case 6:
                 sixRB.setChecked(true);
                 break;
@@ -492,10 +497,10 @@ public class MainActivity extends AppCompatActivity {
         final RadioButton soloRB = (RadioButton) dialogView.findViewById(R.id.solo);
         final RadioButton multiRB = (RadioButton) dialogView.findViewById(R.id.multi);
         switch (mode) {
-            case "Solo":
+            case 'S':
                 soloRB.setChecked(true);
                 break;
-            case "Multi":
+            case 'M':
                 multiRB.setChecked(true);
                 break;
         }
@@ -524,6 +529,26 @@ public class MainActivity extends AppCompatActivity {
                 // Update size.
                 RadioButton sizeRB = sizeRG.findViewById(sizeRG.getCheckedRadioButtonId());
                 String selectedSize = sizeRB.getText().toString();
+                switch (selectedSize) {
+                    case "6X6":
+                        if (size != 6) {
+                            size = 6;
+                            respondToRestart();
+                        }
+                        break;
+                    case "8X8":
+                        if (size != 8) {
+                            size = 8;
+                            respondToRestart();
+                        }
+                        break;
+                    case "10X10":
+                        if (size != 10) {
+                            size = 10;
+                            respondToRestart();
+                        }
+                        break;
+                }
 
                 // Update mode.
                 RadioButton modeRB = modeRG.findViewById(modeRG.getCheckedRadioButtonId());
@@ -586,6 +611,8 @@ public class MainActivity extends AppCompatActivity {
             LinearLayout main = findViewById(R.id.main);
             Button startBtn = main.findViewWithTag(startTag);
             Button endBtn = main.findViewWithTag(endTag);
+
+            if (startBtn == null || endBtn == null) return;
 
             if (hint.charAt(0) == 'B') {
                 startBtn.setBackgroundColor(Color.parseColor("#000000"));
