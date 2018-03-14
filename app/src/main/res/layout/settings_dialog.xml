@@ -9,13 +9,6 @@
         android:gravity="center"
         android:orientation="vertical">
 
-        <EditText android:id="@+id/guess"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:padding="25dp"
-            android:inputType="number"
-            android:hint="@string/settings_guess_hint"/>
-
         <RadioGroup android:id="@+id/size"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -53,6 +46,23 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/settings_multi"/>
+        </RadioGroup>
+
+        <RadioGroup android:id="@+id/guess"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="25dp"
+            android:orientation="horizontal">
+
+            <RadioButton android:id="@+id/first"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_first"/>
+
+            <RadioButton android:id="@+id/second"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_second"/>
         </RadioGroup>
 
         <Spinner android:id="@+id/search"

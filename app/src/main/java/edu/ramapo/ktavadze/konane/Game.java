@@ -12,27 +12,37 @@ import java.util.Stack;
 
 public class Game {
     public static Board board;
+    public char mode;
     public Player black;
     public Player white;
-    public char turn;
-    public boolean isMoving;
-    public boolean isCombo;
+    public char turn = 'B';
+    public boolean isMoving = false;
+    public boolean isCombo = false;
     public int row;
     public int col;
-    public String search;
+    public String search = "Best";
     public ArrayList<Move> moves;
 
     /**
      Game class constructor.
      */
-    public Game(int a_size) {
+    public Game(int a_size, char a_mode, boolean a_guess) {
         board = new Board(a_size);
-        black = new Player('B');
-        white = new Player('W');
-        turn = 'B';
-        isMoving = false;
-        isCombo = false;
-        search = "Best";
+        mode = a_mode;
+        if (mode == 'S') {
+            if (a_guess == board.isBlackFirst) {
+                black = new Player('B', true);
+                white = new Player('W', false);
+            }
+            else {
+                black = new Player('B', false);
+                white = new Player('W', true);
+            }
+        }
+        else {
+            black = new Player('B', true);
+            white = new Player('W', true);
+        }
         setSearch(search);
     }
 
@@ -556,14 +566,14 @@ public class Game {
     public String processNext() {
         // Check if game is over.
         if (isOver()) {
-            return "W05500";
+            return "W0" + (board.size - 1) + (board.size - 1) + "00";
         }
 
         // Check if moves is empty.
         if (moves.isEmpty()) {
             setSearch(search);
             if (moves.isEmpty()) {
-                return "W05500";
+                return "W0" + (board.size - 1) + (board.size - 1) + "00";
             }
         }
 
@@ -573,7 +583,7 @@ public class Game {
         if (turn != next.start.color) {
             setSearch(search);
             if (moves.isEmpty()) {
-                return "W05500";
+                return "W0" + (board.size - 1) + (board.size - 1) + "00";
             }
             next = moves.remove(0);
         }

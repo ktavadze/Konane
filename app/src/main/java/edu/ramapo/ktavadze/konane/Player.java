@@ -5,16 +5,17 @@ package edu.ramapo.ktavadze.konane;
  */
 
 public class Player {
+    public int score = 0;
     public char color;
-    public int score;
+    public boolean isHuman;
 
     /**
      Player class constructor.
      @param a_color - Char color value of the new player.
      */
-    public Player(char a_color) {
+    public Player(char a_color, boolean a_isHuman) {
         color = a_color;
-        score = 0;
+        isHuman = a_isHuman;
     }
 
     /**

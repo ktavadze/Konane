@@ -9,6 +9,7 @@ import java.util.Random;
 public class Board {
     public int size;
     public Square[][] table;
+    public boolean isBlackFirst;
 
     /**
      Board class constructor.
@@ -97,6 +98,13 @@ public class Board {
         // Empty the first square
         char emptied = table[randRow][randCol].color;
         table[randRow][randCol].empty();
+
+        if (emptied == 'B') {
+            isBlackFirst = true;
+        }
+        else {
+            isBlackFirst = false;
+        }
 
         while (true) {
             randRow = rand.nextInt(size);

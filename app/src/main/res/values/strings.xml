@@ -8,12 +8,13 @@
     <string name="action_case1">Case 1</string>
     <string name="action_case2">Case 2</string>
     <string name="settings_title">Settings</string>
-    <string name="settings_guess_hint">Guess 1 or 2</string>
-    <string name="settings_solo">Solo</string>
-    <string name="settings_multi">Multi</string>
     <string name="settings_six">6X6</string>
     <string name="settings_eight">8X8</string>
     <string name="settings_ten">10X10</string>
+    <string name="settings_solo">Solo</string>
+    <string name="settings_multi">Multi</string>
+    <string name="settings_first">1st</string>
+    <string name="settings_second">2nd</string>
     <string-array name="settings_search_select">
         <item>Depth</item>
         <item>Breadth</item>

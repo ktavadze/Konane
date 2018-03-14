@@ -21,7 +21,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -36,7 +35,8 @@ public class MainActivity extends AppCompatActivity {
 
     private int size = 6;
     private char mode = 'S';
-    private Game game = new Game(size);
+    private boolean guess = true;
+    private Game game = new Game(size, mode, guess);
     private String hint = "";
 
     @Override
@@ -452,7 +452,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void respondToRestart() {
         // Restart game.
-        game = new Game(size);
+        game = new Game(size, mode, guess);
 
         displayMessage("Welcome!");
 
@@ -476,11 +476,11 @@ public class MainActivity extends AppCompatActivity {
         dialogBuilder.setTitle(R.string.settings_title);
 
         // Select current size.
-        final RadioGroup sizeRG = (RadioGroup) dialogView.findViewById(R.id.size);
-        final RadioButton sixRB = (RadioButton) dialogView.findViewById(R.id.six);
-        final RadioButton eightRB = (RadioButton) dialogView.findViewById(R.id.eight);
-        final RadioButton tenRB = (RadioButton) dialogView.findViewById(R.id.ten);
-        switch (Game.board.size) {
+        final RadioGroup sizeRG = dialogView.findViewById(R.id.size);
+        final RadioButton sixRB = dialogView.findViewById(R.id.six);
+        final RadioButton eightRB = dialogView.findViewById(R.id.eight);
+        final RadioButton tenRB = dialogView.findViewById(R.id.ten);
+        switch (size) {
             case 6:
                 sixRB.setChecked(true);
                 break;
@@ -493,9 +493,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Select current mode.
-        final RadioGroup modeRG = (RadioGroup) dialogView.findViewById(R.id.mode);
-        final RadioButton soloRB = (RadioButton) dialogView.findViewById(R.id.solo);
-        final RadioButton multiRB = (RadioButton) dialogView.findViewById(R.id.multi);
+        final RadioGroup modeRG = dialogView.findViewById(R.id.mode);
+        final RadioButton soloRB = dialogView.findViewById(R.id.solo);
+        final RadioButton multiRB = dialogView.findViewById(R.id.multi);
         switch (mode) {
             case 'S':
                 soloRB.setChecked(true);
@@ -505,8 +505,19 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
+        // Select current guess.
+        final RadioGroup guessRG = dialogView.findViewById(R.id.guess);
+        final RadioButton firstRB = dialogView.findViewById(R.id.first);
+        final RadioButton secondRB = dialogView.findViewById(R.id.second);
+        if (guess) {
+            firstRB.setChecked(true);
+        }
+        else {
+            secondRB.setChecked(true);
+        }
+
         // Select current search.
-        final Spinner searchSPN = (Spinner) dialogView.findViewById(R.id.search);
+        final Spinner searchSPN = dialogView.findViewById(R.id.search);
         switch (game.search) {
             case "Depth":
                 searchSPN.setSelection(0);
@@ -522,9 +533,7 @@ public class MainActivity extends AppCompatActivity {
         // Define responses.
         dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                // Update guess
-                EditText guessET = dialogView.findViewById(R.id.guess);
-                String selectedGuess = guessET.getText().toString();
+                boolean mustRestart = false;
 
                 // Update size.
                 RadioButton sizeRB = sizeRG.findViewById(sizeRG.getCheckedRadioButtonId());
@@ -533,19 +542,19 @@ public class MainActivity extends AppCompatActivity {
                     case "6X6":
                         if (size != 6) {
                             size = 6;
-                            respondToRestart();
+                            mustRestart = true;
                         }
                         break;
                     case "8X8":
                         if (size != 8) {
                             size = 8;
-                            respondToRestart();
+                            mustRestart = true;
                         }
                         break;
                     case "10X10":
                         if (size != 10) {
                             size = 10;
-                            respondToRestart();
+                            mustRestart = true;
                         }
                         break;
                 }
@@ -553,10 +562,46 @@ public class MainActivity extends AppCompatActivity {
                 // Update mode.
                 RadioButton modeRB = modeRG.findViewById(modeRG.getCheckedRadioButtonId());
                 String selectedMode = modeRB.getText().toString();
+                switch (selectedMode) {
+                    case "Solo":
+                        if (mode != 'S') {
+                            mode = 'S';
+                            mustRestart = true;
+                        }
+                        break;
+                    case "Multi":
+                        if (mode != 'M') {
+                            mode = 'M';
+                            mustRestart = true;
+                        }
+                        break;
+                }
+
+                // Update guess
+                RadioButton guessRB = guessRG.findViewById(guessRG.getCheckedRadioButtonId());
+                String selectedGuess = guessRB.getText().toString();
+                switch (selectedGuess) {
+                    case "1st":
+                        if (!guess) {
+                            guess = true;
+                            mustRestart = true;
+                        }
+                        break;
+                    case "2nd":
+                        if (guess) {
+                            guess = false;
+                            mustRestart = true;
+                        }
+                        break;
+                }
 
                 // Update search.
                 String selectedSearch = searchSPN.getSelectedItem().toString();
                 game.setSearch(selectedSearch);
+
+                if (mustRestart) {
+                    respondToRestart();
+                }
 
                 displayMessage(selectedGuess + selectedSize + selectedMode + selectedSearch);
             }
