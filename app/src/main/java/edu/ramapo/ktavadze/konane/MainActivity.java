@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         generateColumnLabels();
 
         // Generate rows.
-        for (int i = 0; i < game.board.size; i++) {
+        for (int i = 0; i < game.boardSize; i++) {
             LinearLayout row = new LinearLayout(this);
 
             // Add row layout params.
@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
             row.addView(rowLabel1);
 
             // Generate buttons.
-            for (int j = 0; j < game.board.size; j++) {
+            for (int j = 0; j < game.boardSize; j++) {
                 Button button = new Button(this);
 
                 // Add button layout params.
@@ -234,7 +234,7 @@ public class MainActivity extends AppCompatActivity {
         colLabels.setPadding(40,0,40,0);
 
         // Generate column labels.
-        for (int c = 0; c < game.board.size; c++) {
+        for (int c = 0; c < game.boardSize; c++) {
             TextView colLabel = new TextView(this);
 
             // Add column label params.
@@ -264,8 +264,8 @@ public class MainActivity extends AppCompatActivity {
      */
     public void displayBoard() {
         LinearLayout board = findViewById(R.id.main);
-        for (int i = 0; i < game.board.size; i++) {
-            for (int j = 0; j < game.board.size; j++) {
+        for (int i = 0; i < game.boardSize; i++) {
+            for (int j = 0; j < game.boardSize; j++) {
                 String tag = "b" + i + j;
                 char color = Game.board.table[i][j].color;
                 if (color == 'O') {
@@ -290,7 +290,24 @@ public class MainActivity extends AppCompatActivity {
      Displays whose turn it is and whether she is moving by setting the text of the second TextView.
      */
     public void displayTurn() {
-        ((TextView) findViewById( R.id.turn )).setText(Character.toString(game.turn));
+        String turnInfo = Character.toString(game.turn);
+        if (game.turn == 'B') {
+            if (game.black.isHuman) {
+                turnInfo += "T";
+            }
+            else {
+                turnInfo += "F";
+            }
+        }
+        else {
+            if (game.white.isHuman) {
+                turnInfo += "T";
+            }
+            else {
+                turnInfo += "F";
+            }
+        }
+        ((TextView) findViewById( R.id.turn )).setText(turnInfo);
     }
 
     /**
