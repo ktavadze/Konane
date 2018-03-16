@@ -26,17 +26,16 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
 public class MainActivity extends AppCompatActivity {
 
-    private int size = 6;
-    private char mode = 'S';
-    private boolean guess = true;
-    private Game game = new Game(size, mode, guess);
+    private Game game = new Game(6, 'S', true);
     private String hint = "";
 
     @Override
@@ -70,70 +69,19 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.action_restart:
                 // Restart game.
-                respondToRestart();
+                respondToRestart(game.boardSize, game.mode, game.guess);
                 return true;
             case R.id.action_preset:
                 // Load preset.
-                game.setState("Black: 6\n" +
-                        "White: 4\n" +
-                        "Board:\n" +
-                        "B W B W B W\n" +
-                        "W B O B O B\n" +
-                        "B W O W B W\n" +
-                        "O B O O O O\n" +
-                        "B W B O O W\n" +
-                        "W B W O O B\n" +
-                        "Next Player: White");
-
-                displayMessage("Preset loaded!");
-
-                // Update user interface.
-                displayBoard();
-                displayTurn();
-                displayScores();
-                clearHint();
+                respondToAsset("preset.txt");
                 return true;
             case R.id.action_case1:
                 // Load case 1.
-                game.setState("Black: 0\n" +
-                        "White: 0\n" +
-                        "Board:\n" +
-                        "O W O W O O\n" +
-                        "W O W O W O\n" +
-                        "O W B W O O\n" +
-                        "W O W O W O\n" +
-                        "O W O W O O\n" +
-                        "O O O O O O\n" +
-                        "Next Player: Black");
-
-                displayMessage("Case 1 loaded!");
-
-                // Update user interface.
-                displayBoard();
-                displayTurn();
-                displayScores();
-                clearHint();
+                respondToAsset("case1.txt");
                 return true;
             case R.id.action_case2:
                 // Load case 2.
-                game.setState("Black: 0\n" +
-                        "White: 0\n" +
-                        "Board:\n" +
-                        "O W O O O O\n" +
-                        "O O W O W O\n" +
-                        "O W B W O O\n" +
-                        "W O W O O O\n" +
-                        "O W O O O W\n" +
-                        "W O W O W O\n" +
-                        "Next Player: Black");
-
-                displayMessage("Case 2 loaded!");
-
-                // Update user interface.
-                displayBoard();
-                displayTurn();
-                displayScores();
-                clearHint();
+                respondToAsset("case2.txt");
                 return true;
             default:
                 // Invoke superclass to handle unrecognized action.
@@ -154,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         generateColumnLabels();
 
         // Generate rows.
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < game.board.size; i++) {
             LinearLayout row = new LinearLayout(this);
 
             // Add row layout params.
@@ -187,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
             row.addView(rowLabel1);
 
             // Generate buttons.
-            for (int j = 0; j < size; j++) {
+            for (int j = 0; j < game.board.size; j++) {
                 Button button = new Button(this);
 
                 // Add button layout params.
@@ -286,7 +234,7 @@ public class MainActivity extends AppCompatActivity {
         colLabels.setPadding(40,0,40,0);
 
         // Generate column labels.
-        for (int c = 0; c < size; c++) {
+        for (int c = 0; c < game.board.size; c++) {
             TextView colLabel = new TextView(this);
 
             // Add column label params.
@@ -316,8 +264,8 @@ public class MainActivity extends AppCompatActivity {
      */
     public void displayBoard() {
         LinearLayout board = findViewById(R.id.main);
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
+        for (int i = 0; i < game.board.size; i++) {
+            for (int j = 0; j < game.board.size; j++) {
                 String tag = "b" + i + j;
                 char color = Game.board.table[i][j].color;
                 if (color == 'O') {
@@ -441,6 +389,41 @@ public class MainActivity extends AppCompatActivity {
         displayMessage("Game loaded!");
 
         // Update user interface.
+        generateBoard();
+        displayBoard();
+        displayTurn();
+        displayScores();
+        clearHint();
+    }
+
+    /**
+     Responds to the asset action and updates the view accordingly.
+     @param a_name - Name of the asset to be loaded.
+     */
+    public void respondToAsset(String a_name) {
+        String state = "";
+
+        // Load from asset.
+        try {
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(getAssets().open(a_name)));
+            String lineRead;
+            while ((lineRead = reader.readLine()) != null) {
+                state += lineRead + "\n";
+            }
+            reader.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Set game state.
+        game.setState(state);
+
+        displayMessage("Asset loaded!");
+
+        // Update user interface.
+        generateBoard();
         displayBoard();
         displayTurn();
         displayScores();
@@ -449,10 +432,13 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      Responds to the restart action and updates the view accordingly.
+     @param a_size - Integer value of the board size.
+     @param a_mode - Character value of the game mode.
+     @param a_guess - Boolean value of the guess.
      */
-    public void respondToRestart() {
+    public void respondToRestart(int a_size, char a_mode, boolean a_guess) {
         // Restart game.
-        game = new Game(size, mode, guess);
+        game = new Game(a_size, a_mode, a_guess);
 
         displayMessage("Welcome!");
 
@@ -480,7 +466,7 @@ public class MainActivity extends AppCompatActivity {
         final RadioButton sixRB = dialogView.findViewById(R.id.six);
         final RadioButton eightRB = dialogView.findViewById(R.id.eight);
         final RadioButton tenRB = dialogView.findViewById(R.id.ten);
-        switch (size) {
+        switch (game.boardSize) {
             case 6:
                 sixRB.setChecked(true);
                 break;
@@ -496,7 +482,7 @@ public class MainActivity extends AppCompatActivity {
         final RadioGroup modeRG = dialogView.findViewById(R.id.mode);
         final RadioButton soloRB = dialogView.findViewById(R.id.solo);
         final RadioButton multiRB = dialogView.findViewById(R.id.multi);
-        switch (mode) {
+        switch (game.mode) {
             case 'S':
                 soloRB.setChecked(true);
                 break;
@@ -509,7 +495,7 @@ public class MainActivity extends AppCompatActivity {
         final RadioGroup guessRG = dialogView.findViewById(R.id.guess);
         final RadioButton firstRB = dialogView.findViewById(R.id.first);
         final RadioButton secondRB = dialogView.findViewById(R.id.second);
-        if (guess) {
+        if (game.guess) {
             firstRB.setChecked(true);
         }
         else {
@@ -540,20 +526,20 @@ public class MainActivity extends AppCompatActivity {
                 String selectedSize = sizeRB.getText().toString();
                 switch (selectedSize) {
                     case "6X6":
-                        if (size != 6) {
-                            size = 6;
+                        if (game.boardSize != 6) {
+                            game.boardSize = 6;
                             mustRestart = true;
                         }
                         break;
                     case "8X8":
-                        if (size != 8) {
-                            size = 8;
+                        if (game.boardSize != 8) {
+                            game.boardSize = 8;
                             mustRestart = true;
                         }
                         break;
                     case "10X10":
-                        if (size != 10) {
-                            size = 10;
+                        if (game.boardSize != 10) {
+                            game.boardSize = 10;
                             mustRestart = true;
                         }
                         break;
@@ -564,14 +550,14 @@ public class MainActivity extends AppCompatActivity {
                 String selectedMode = modeRB.getText().toString();
                 switch (selectedMode) {
                     case "Solo":
-                        if (mode != 'S') {
-                            mode = 'S';
+                        if (game.mode != 'S') {
+                            game.mode = 'S';
                             mustRestart = true;
                         }
                         break;
                     case "Multi":
-                        if (mode != 'M') {
-                            mode = 'M';
+                        if (game.mode != 'M') {
+                            game.mode = 'M';
                             mustRestart = true;
                         }
                         break;
@@ -582,26 +568,26 @@ public class MainActivity extends AppCompatActivity {
                 String selectedGuess = guessRB.getText().toString();
                 switch (selectedGuess) {
                     case "1st":
-                        if (!guess) {
-                            guess = true;
+                        if (!game.guess) {
+                            game.guess = true;
                             mustRestart = true;
                         }
                         break;
                     case "2nd":
-                        if (guess) {
-                            guess = false;
+                        if (game.guess) {
+                            game.guess = false;
                             mustRestart = true;
                         }
                         break;
+                }
+
+                if (mustRestart) {
+                    respondToRestart(game.boardSize, game.mode, game.guess);
                 }
 
                 // Update search.
                 String selectedSearch = searchSPN.getSelectedItem().toString();
                 game.setSearch(selectedSearch);
-
-                if (mustRestart) {
-                    respondToRestart();
-                }
 
                 displayMessage(selectedGuess + selectedSize + selectedMode + selectedSearch);
             }

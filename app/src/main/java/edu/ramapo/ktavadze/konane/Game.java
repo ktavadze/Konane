@@ -11,8 +11,10 @@ import java.util.Stack;
  */
 
 public class Game {
-    public static Board board;
+    public int boardSize;
     public char mode;
+    public boolean guess;
+    public static Board board;
     public Player black;
     public Player white;
     public char turn = 'B';
@@ -25,12 +27,17 @@ public class Game {
 
     /**
      Game class constructor.
+     @param a_size - Integer value of the board boardSize.
+     @param a_mode - Character value of the game mode.
+     @param a_guess - Boolean value of the guess.
      */
     public Game(int a_size, char a_mode, boolean a_guess) {
-        board = new Board(a_size);
+        boardSize = a_size;
         mode = a_mode;
+        guess = a_guess;
+        board = new Board(boardSize);
         if (mode == 'S') {
-            if (a_guess == board.isBlackFirst) {
+            if (guess == board.isBlackFirst) {
                 black = new Player('B', true);
                 white = new Player('W', false);
             }
@@ -163,11 +170,28 @@ public class Game {
      */
     public String getState() {
         // Get scores.
-        String state = "Black: " + black.score + "\nWhite: " + white.score + "\nBoard:\n";
+        String state = "Black: ";
+        if (black.isHuman) {
+            state += "T";
+        }
+        else {
+            state += "F";
+        }
+        state += black.score + "\nWhite: ";
+        if (white.isHuman) {
+            state += "T";
+        }
+        else {
+            state += "F";
+        }
+        state += white.score + "\n";
+
+        // Get boardSize.
+        state += "Board: " + boardSize + "\n";
 
         // Get board.
-        for (int i = 0; i < board.size; i++) {
-            for (int j = 0; j < board.size; j++) {
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
                 state += board.table[i][j].color + " ";
             }
             state += "\n";
@@ -191,39 +215,73 @@ public class Game {
     public void setState(String a_state) {
         Scanner scanner = new Scanner(a_state);
         int lineNum = 1;
+        int size = 0;
         int row = 0;
 
         while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
+            String lineString = scanner.nextLine();
+            char[] lineChars = lineString.toCharArray();
 
-            switch (lineNum) {
-                // Set black score.
-                case 1:
-                    black.score = Character.getNumericValue(line.charAt(7));
-                    break;
-                // Set white score.
-                case 2:
-                    white.score = Character.getNumericValue(line.charAt(7));
-                    break;
-                case 3:
-                    break;
-                // Set board.
-                case 4:case 5:case 6:case 7:case 8:case 9:
-                    for (int i = 0, j = 0; j < board.size; i += 2, j++) {
-                        if (line.charAt(i) == 'O') {
-                            board.table[row][j].empty();
-                        }
-                        else {
-                            board.table[row][j].color = line.charAt(i);
-                            board.table[row][j].isEmpty = false;
-                        }
+            // Set black player.
+            if (lineNum == 1) {
+                if (lineChars[7] == 'T') {
+                    black = new Player('B', true);
+                }
+                else {
+                    black = new Player('B', false);
+                }
+                int blackScore = Character.getNumericValue(lineChars[8]);
+                if (lineChars.length == 10) {
+                    blackScore *= 10;
+                    blackScore += Character.getNumericValue(lineChars[9]);
+                }
+                black.score = blackScore;
+            }
+            // Set white player.
+            else if (lineNum == 2) {
+                if (lineChars[7] == 'T') {
+                    white = new Player('W', true);
+                }
+                else {
+                    white = new Player('W', false);
+                }
+                int whiteScore = Character.getNumericValue(lineChars[8]);
+                if (lineChars.length == 10) {
+                    whiteScore *= 10;
+                    whiteScore += Character.getNumericValue(lineChars[9]);
+                }
+                white.score = whiteScore;
+            }
+            // Set mode and board size.
+            else if (lineNum == 3) {
+                if (white.isHuman && black.isHuman) {
+                    mode = 'S';
+                }
+                else {
+                    mode = 'M';
+                }
+                size = Character.getNumericValue(lineChars[7]);
+                if (boardSize != size) {
+                    boardSize = size;
+                    board = new Board(boardSize);
+                }
+            }
+            // Set board state.
+            else if (lineNum < boardSize + 4) {
+                for (int i = 0, j = 0; j < boardSize; i += 2, j++) {
+                    if (lineChars[i] == 'O') {
+                        board.table[row][j].empty();
                     }
-                    row++;
-                    break;
-                // Set turn.
-                case 10:
-                    turn = line.charAt(13) == 'B' ? 'B' : 'W';
-                    break;
+                    else {
+                        board.table[row][j].color = lineChars[i];
+                        board.table[row][j].isEmpty = false;
+                    }
+                }
+                row++;
+            }
+            // Set turn.
+            else if (lineNum == boardSize + 4) {
+                turn = lineChars[13] == 'B' ? 'B' : 'W';
             }
             lineNum++;
         }
@@ -286,8 +344,8 @@ public class Game {
         // Populate starting stack.
         Stack<Move> s = new Stack<>();
         Player player = turn == 'B' ? black : white;
-        for (int i = board.size - 1; i >= 0; i--) {
-            for (int j = board.size - 1; j >= 0; j--) {
+        for (int i = boardSize - 1; i >= 0; i--) {
+            for (int j = boardSize - 1; j >= 0; j--) {
                 if (player.canMove(i, j)) {
                     Square square = board.table[i][j];
                     s.push(new Move(square, square, square, 0));
@@ -384,8 +442,8 @@ public class Game {
         // Populate starting queue.
         Queue<Move> q = new LinkedList<>();
         Player player = turn == 'B' ? black : white;
-        for (int i = 0; i < board.size; i++) {
-            for (int j = 0; j < board.size; j++) {
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
                 if (player.canMove(i, j)) {
                     Square square = board.table[i][j];
                     Move move = new Move(square, square, square, 0);
@@ -475,8 +533,8 @@ public class Game {
         // Populate starting queue.
         Queue<Move> q = new LinkedList<>();
         Player player = turn == 'B' ? black : white;
-        for (int i = 0; i < board.size; i++) {
-            for (int j = 0; j < board.size; j++) {
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
                 if (player.canMove(i, j)) {
                     Square square = board.table[i][j];
                     Move move = new Move(square, square, square, 0);
@@ -566,14 +624,14 @@ public class Game {
     public String processNext() {
         // Check if game is over.
         if (isOver()) {
-            return "W0" + (board.size - 1) + (board.size - 1) + "00";
+            return "W0" + (boardSize - 1) + (boardSize - 1) + "00";
         }
 
         // Check if moves is empty.
         if (moves.isEmpty()) {
             setSearch(search);
             if (moves.isEmpty()) {
-                return "W0" + (board.size - 1) + (board.size - 1) + "00";
+                return "W0" + (boardSize - 1) + (boardSize - 1) + "00";
             }
         }
 
@@ -583,7 +641,7 @@ public class Game {
         if (turn != next.start.color) {
             setSearch(search);
             if (moves.isEmpty()) {
-                return "W0" + (board.size - 1) + (board.size - 1) + "00";
+                return "W0" + (boardSize - 1) + (boardSize - 1) + "00";
             }
             next = moves.remove(0);
         }

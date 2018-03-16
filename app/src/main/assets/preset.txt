@@ -1,0 +1,10 @@
+Black: T6
+White: T4
+Board: 6
+B W B W B W
+W B O B O B
+B W O W B W
+O B O O O O
+B W B O O W
+W B W O O B
+Next Player: White

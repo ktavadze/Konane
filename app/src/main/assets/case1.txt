@@ -1,0 +1,10 @@
+Black: T0
+White: T0
+Board: 6
+O W O W O O
+W O W O W O
+O W B W O O
+W O W O W O
+O W O W O O
+O O O O O O
+Next Player: Black
