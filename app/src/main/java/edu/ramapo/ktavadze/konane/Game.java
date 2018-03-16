@@ -255,14 +255,17 @@ public class Game {
             // Set mode and board size.
             else if (lineNum == 3) {
                 if (white.isHuman && black.isHuman) {
-                    mode = 'S';
+                    mode = 'M';
                 }
                 else {
-                    mode = 'M';
+                    mode = 'S';
                 }
                 size = Character.getNumericValue(lineChars[7]);
                 if (boardSize != size) {
                     boardSize = size;
+                    if (boardSize == 1) {
+                        boardSize *= 10;
+                    }
                     board = new Board(boardSize);
                 }
             }
