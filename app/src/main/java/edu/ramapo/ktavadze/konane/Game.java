@@ -546,8 +546,8 @@ public class Game {
             }
         }
 
-        // Populate moves list.
-        moves = new ArrayList<>();
+        // Populate allMoves list.
+        ArrayList<Move> allMoves = new ArrayList<>();
         while (q.peek() != null) {
             Move move = q.remove();
             Square start = move.start;
@@ -562,8 +562,8 @@ public class Game {
                 Square up = board.table[end.row - 2][end.col];
                 Move moveUp = new Move(start, end, up, score + 1);
                 if (!prev.equals(up)) {
-                    // Add move up to moves list.
-                    moves.add(0, moveUp);
+                    // Add move up to allMoves list.
+                    allMoves.add(0, moveUp);
                     if (player.canMoveUp(up.row, up.col) ||
                             player.canMoveRight(up.row, up.col) ||
                             player.canMoveLeft(up.row, up.col)) {
@@ -577,8 +577,8 @@ public class Game {
                 Square right = board.table[end.row][end.col + 2];
                 Move moveRight = new Move(start, end, right, score + 1);
                 if (!prev.equals(right)) {
-                    // Add move right to moves list.
-                    moves.add(0, moveRight);
+                    // Add move right to allMoves list.
+                    allMoves.add(0, moveRight);
                     if (player.canMoveUp(right.row, right.col) ||
                             player.canMoveRight(right.row, right.col) ||
                             player.canMoveDown(right.row, right.col)) {
@@ -592,8 +592,8 @@ public class Game {
                 Square down = board.table[end.row + 2][end.col];
                 Move moveDown = new Move(start, end, down, score + 1);
                 if (!prev.equals(down)) {
-                    // Add move down to moves list.
-                    moves.add(0, moveDown);
+                    // Add move down to allMoves list.
+                    allMoves.add(0, moveDown);
                     if (player.canMoveRight(down.row, down.col) ||
                             player.canMoveDown(down.row, down.col) ||
                             player.canMoveLeft(down.row, down.col)) {
@@ -607,14 +607,28 @@ public class Game {
                 Square left = board.table[end.row][end.col - 2];
                 Move moveLeft = new Move(start, end, left, score + 1);
                 if (!prev.equals(left)) {
-                    // Add move left to moves list.
-                    moves.add(0, moveLeft);
+                    // Add move left to allMoves list.
+                    allMoves.add(0, moveLeft);
                     if (player.canMoveUp(left.row, left.col) ||
                             player.canMoveDown(left.row, left.col) ||
                             player.canMoveLeft(left.row, left.col)) {
                         // Add move left to queue.
                         q.add(moveLeft);
                     }
+                }
+            }
+        }
+
+        // Populate moves list.
+        moves = new ArrayList<>();
+        if (!allMoves.isEmpty()) {
+            Move bestMove = allMoves.remove(0);
+            moves.add(bestMove);
+
+            while(!allMoves.isEmpty()) {
+                Move move = allMoves.remove(0);
+                if (move.score == bestMove.score) {
+                    moves.add(0, move);
                 }
             }
         }
