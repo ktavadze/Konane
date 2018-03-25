@@ -5,8 +5,8 @@ package edu.ramapo.ktavadze.konane;
  */
 
 public class Square {
+    public boolean isEmpty = false;
     public char color;
-    public boolean isEmpty;
     public int row;
     public int col;
 
@@ -18,17 +18,8 @@ public class Square {
      */
     public Square(char a_color, int a_row, int a_col) {
         color = a_color;
-        isEmpty = false;
         row = a_row;
         col = a_col;
-    }
-
-    /**
-     Empties the calling square.
-     */
-    public void empty() {
-        color = 'O';
-        isEmpty = true;
     }
 
     /**

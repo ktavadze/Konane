@@ -2,7 +2,7 @@
 ************************************************************
 * Name:  Konstantine Tavadze                               *
 * Project:  Konane                                         *
-* Class:  CMPS331 - Artificial Intelligence                *
+* Class:  Artificial Intelligence                          *
 * Date:  03/02/2018                                        *
 ************************************************************
 */
@@ -24,7 +24,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.Spinner;
 import android.widget.TextView;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -36,7 +35,7 @@ import java.io.OutputStreamWriter;
 public class MainActivity extends AppCompatActivity {
 
     private Game game = new Game(6, 'S', true);
-    private String hint = "";
+    private Path hint = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Generate board xml.
         generateBoard();
+        displayTurn();
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -268,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
             for (int j = 0; j < game.boardSize; j++) {
                 String tag = "b" + i + j;
                 char color = Game.board.table[i][j].color;
-                if (color == 'O') {
+                if (Game.board.table[i][j].isEmpty) {
                     ((Button) board.findViewWithTag( tag )).setText(" ");
                 }
                 else {
@@ -519,20 +519,6 @@ public class MainActivity extends AppCompatActivity {
             secondRB.setChecked(true);
         }
 
-        // Select current search.
-        final Spinner searchSPN = dialogView.findViewById(R.id.search);
-        switch (game.search) {
-            case "Depth":
-                searchSPN.setSelection(0);
-                break;
-            case "Breadth":
-                searchSPN.setSelection(1);
-                break;
-            case "Best":
-                searchSPN.setSelection(2);
-                break;
-        }
-
         // Define responses.
         dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
@@ -602,11 +588,7 @@ public class MainActivity extends AppCompatActivity {
                     respondToRestart(game.boardSize, game.mode, game.guess);
                 }
 
-                // Update search.
-                String selectedSearch = searchSPN.getSelectedItem().toString();
-                game.setSearch(selectedSearch);
-
-                displayMessage(selectedGuess + selectedSize + selectedMode + selectedSearch);
+                displayMessage(selectedGuess + selectedSize + selectedMode);
             }
         });
         dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -625,15 +607,17 @@ public class MainActivity extends AppCompatActivity {
      @param view - View to be listened to.
      */
     public void respondToNext(View view) {
-        // Process next.
-        String next = game.processNext();
-
         // Clear current hint.
         clearHint();
 
+        // Process next.
+        Path next = game.processNext();
+
+        if (next == null) return;
+
         // Display next hint.
-        String startTag = "b" + next.charAt(1) + next.charAt(2);
-        String endTag = "b" + next.charAt(3) + next.charAt(4);
+        String startTag = "b" + next.visited.get(0).start.row + next.visited.get(0).start.col;
+        String endTag = "b" + next.visited.get(next.visited.size() - 1).end.row + next.visited.get(next.visited.size() - 1).end.col;
 
         LinearLayout main = findViewById(R.id.main);
         Button startBtn = main.findViewWithTag(startTag);
@@ -642,8 +626,14 @@ public class MainActivity extends AppCompatActivity {
         startBtn.setBackgroundColor(Color.parseColor("#FFFF00"));
         endBtn.setBackgroundColor(Color.parseColor("#FFFF00"));
 
+        String test = "";
+        for (int i = 1; i < next.visited.size(); i++) {
+            Move temp = next.visited.get(i);
+            test += " " + temp.start.row + temp.start.col + temp.end.row + temp.end.col;
+        }
+
         // Preview score.
-        displayMessage("Score: +" + next.charAt(5));
+        displayMessage(test);
 
         hint = next;
     }
@@ -652,9 +642,9 @@ public class MainActivity extends AppCompatActivity {
      Clears the current hint.
      */
     public void clearHint() {
-        if (!hint.equals("")) {
-            String startTag = "b" + hint.charAt(1) + hint.charAt(2);
-            String endTag = "b" + hint.charAt(3) + hint.charAt(4);
+        if (hint != null) {
+            String startTag = "b" + hint.visited.get(0).start.row + hint.visited.get(0).start.col;
+            String endTag = "b" + hint.visited.get(hint.visited.size() - 1).end.row + hint.visited.get(hint.visited.size() - 1).end.col;
 
             LinearLayout main = findViewById(R.id.main);
             Button startBtn = main.findViewWithTag(startTag);
@@ -662,11 +652,11 @@ public class MainActivity extends AppCompatActivity {
 
             if (startBtn == null || endBtn == null) return;
 
-            if (hint.charAt(0) == 'B') {
+            if (hint.visited.get(0).start.color == 'B') {
                 startBtn.setBackgroundColor(Color.parseColor("#000000"));
                 endBtn.setBackgroundColor(Color.parseColor("#000000"));
             }
-            else {
+            else if (hint.visited.get(0).start.color == 'W') {
                 startBtn.setBackgroundColor(Color.parseColor("#FFFFFF"));
                 endBtn.setBackgroundColor(Color.parseColor("#FFFFFF"));
             }

@@ -6,22 +6,36 @@ package edu.ramapo.ktavadze.konane;
 
 public class Move {
     public Square start;
-    public Square prev;
     public Square end;
-    public Integer score;
+    public Square captured;
 
     /**
      Move class constructor.
      @param a_start - Starting square object.
-     @param a_prev - Previous square object.
      @param a_end - Ending square object.
-     @param a_score - Integer value of the score.
      */
-    public Move(Square a_start, Square a_prev, Square a_end, Integer a_score) {
+    public Move(Square a_start, Square a_end) {
         start = a_start;
-        prev = a_prev;
         end = a_end;
-        score = a_score;
+        if (start.equals(end)) {
+            captured = start;
+        }
+        else if (start.row == end.row) {
+            if (start.col - 2 == end.col) {
+                captured = Game.board.table[start.row][start.col - 1];
+            }
+            else if (start.col + 2 == end.col) {
+                captured = Game.board.table[start.row][start.col + 1];
+            }
+        }
+        else if (start.col == end.col) {
+            if (start.row + 2 == end.row) {
+                captured = Game.board.table[start.row + 1][start.col];
+            }
+            else if (start.row - 2 == end.row) {
+                captured = Game.board.table[start.row - 1][start.col];
+            }
+        }
     }
 
     /**
@@ -32,7 +46,7 @@ public class Move {
     @Override
     public boolean equals(Object a_move) {
         Move move = (Move) a_move;
-        if (start.equals(move.start) && end.equals(move.end) && score == move.score) {
+        if (start.equals(move.start) && end.equals(move.end)) {
             return true;
         }
         return false;

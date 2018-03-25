@@ -64,11 +64,5 @@
                 android:layout_height="wrap_content"
                 android:text="@string/settings_second"/>
         </RadioGroup>
-
-        <Spinner android:id="@+id/search"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="25dp"
-            android:entries="@array/settings_search_select" />
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

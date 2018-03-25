@@ -41,23 +41,23 @@ public class Board {
         // Update midpoint.
         if (a_r1 == a_r2) {
             if (a_c1 - 2 == a_c2) {
-                table[a_r1][a_c1 - 1].empty();
+                table[a_r1][a_c1 - 1].isEmpty = true;
             }
             else if (a_c1 + 2 == a_c2) {
-                table[a_r1][a_c1 + 1].empty();
+                table[a_r1][a_c1 + 1].isEmpty = true;
             }
         }
         else if (a_c1 == a_c2) {
             if (a_r1 + 2 == a_r2) {
-                table[a_r1 + 1][a_c1].empty();
+                table[a_r1 + 1][a_c1].isEmpty = true;
             }
             else if (a_r1 - 2 == a_r2) {
-                table[a_r1 - 1][a_c1].empty();
+                table[a_r1 - 1][a_c1].isEmpty = true;
             }
         }
 
         // Update origin.
-        square1.empty();
+        square1.isEmpty = true;
     }
 
     /**
@@ -97,7 +97,7 @@ public class Board {
 
         // Empty the first square
         char emptied = table[randRow][randCol].color;
-        table[randRow][randCol].empty();
+        table[randRow][randCol].isEmpty = true;
 
         if (emptied == 'B') {
             isBlackFirst = true;
@@ -112,7 +112,7 @@ public class Board {
 
             // Empty the second square.
             if (table[randRow][randCol].color != emptied && !table[randRow][randCol].isEmpty) {
-                table[randRow][randCol].empty();
+                table[randRow][randCol].isEmpty = true;
                 break;
             }
         }

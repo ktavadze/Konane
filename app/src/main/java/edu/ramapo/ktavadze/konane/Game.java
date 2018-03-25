@@ -22,8 +22,7 @@ public class Game {
     public boolean isCombo = false;
     public int row;
     public int col;
-    public String search = "Best";
-    public ArrayList<Move> moves;
+    public ArrayList<Path> paths = null;
 
     /**
      Game class constructor.
@@ -50,7 +49,7 @@ public class Game {
             black = new Player('B', true);
             white = new Player('W', true);
         }
-        setSearch(search);
+        updatePaths();
     }
 
     /**
@@ -151,14 +150,14 @@ public class Game {
         // Black passes.
         if (turn == 'B') {
             turn = 'W';
-            setSearch(search);
+            updatePaths();
 
             return "Black passes!";
         }
         // White passes.
         else {
             turn = 'B';
-            setSearch(search);
+            updatePaths();
 
             return "White passes!";
         }
@@ -192,7 +191,12 @@ public class Game {
         // Get board.
         for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {
-                state += board.table[i][j].color + " ";
+                if (board.table[i][j].isEmpty) {
+                    state += "O ";
+                }
+                else {
+                    state += board.table[i][j].color + " ";
+                }
             }
             state += "\n";
         }
@@ -273,7 +277,7 @@ public class Game {
             else if (lineNum < boardSize + 4) {
                 for (int i = 0, j = 0; j < boardSize; i += 2, j++) {
                     if (lineChars[i] == 'O') {
-                        board.table[row][j].empty();
+                        board.table[row][j].isEmpty = true;
                     }
                     else {
                         board.table[row][j].color = lineChars[i];
@@ -293,7 +297,7 @@ public class Game {
         // Reset move.
         isMoving = false;
         isCombo = false;
-        setSearch(search);
+        updatePaths();
     }
 
     /**
@@ -322,313 +326,311 @@ public class Game {
     }
 
     /**
-     Sets the search value and updates the moves accordingly.
-     @param a_search - String search value to be set.
+     Updates the paths.
      */
-    public void setSearch(String a_search) {
-        search = a_search;
-        switch (a_search) {
-            case "Depth":
-                updateMovesDepth();
-                break;
-            case "Breadth":
-                updateMovesBreadth();
-                break;
-            case "Best":
-                updateMovesBest();
-                break;
-        }
+    public void updatePaths() {
+        updatePathsBest();
     }
 
     /**
-     Updates the moves using Depth First Search.
+     Updates the paths using depth first search.
      */
-    public void updateMovesDepth() {
+    public void updatePathsDepth() {
         // Populate starting stack.
-        Stack<Move> s = new Stack<>();
+        Stack<Path> s = new Stack<>();
         Player player = turn == 'B' ? black : white;
         for (int i = boardSize - 1; i >= 0; i--) {
             for (int j = boardSize - 1; j >= 0; j--) {
                 if (player.canMove(i, j)) {
                     Square square = board.table[i][j];
-                    s.push(new Move(square, square, square, 0));
+                    Move move = new Move(square, square);
+                    Path path = new Path();
+                    path.addMove(move);
+                    s.push(path);
                 }
             }
         }
 
-        // Populate moves list.
-        moves = new ArrayList<>();
+        // Find depth paths.
+        paths = new ArrayList<>();
         while (!s.empty()) {
-            Move move = s.pop();
-            Square start = move.start;
-            Square prev = move.prev;
-            Square end = move.end;
-
-            Integer score = move.score;
-            if (score == 9) break;
+            Path path = s.pop();
+            Move move = path.visited.get(path.visited.size() - 1);
+            path.visited.get(0).start.isEmpty = true;
 
             // Check move up.
-            if (player.canMoveUp(end.row, end.col)) {
-                Square up = board.table[end.row - 2][end.col];
-                Move moveUp = new Move(start, end, up, score + 1);
-                if (!prev.equals(up) && !moves.contains(moveUp)) {
-                    // Add move up to moves list.
-                    moves.add(moveUp);
-                    if (player.canMoveUp(up.row, up.col) ||
-                            player.canMoveRight(up.row, up.col) ||
-                            player.canMoveLeft(up.row, up.col)) {
-                        // Add moves to stack.
-                        s.push(move);
-                        s.push(moveUp);
-                        continue;
+            if (player.canMoveUp(move.end.row, move.end.col)) {
+                Square up = board.table[move.end.row - 2][move.end.col];
+                Move moveUp = new Move(move.end, up);
+                if (!path.captured.contains(moveUp.captured)) {
+                    Path pathUp = new Path(path);
+                    pathUp.addMove(moveUp);
+                    if (!paths.contains(pathUp)) {
+                        paths.add(pathUp);
+                        if (player.canMoveUp(up.row, up.col) ||
+                                player.canMoveRight(up.row, up.col) ||
+                                player.canMoveLeft(up.row, up.col)) {
+                            s.push(path);
+                            s.push(pathUp);
+                            continue;
+                        }
                     }
                 }
             }
             // Check move right.
-            if (player.canMoveRight(end.row, end.col)) {
-                Square right = board.table[end.row][end.col + 2];
-                Move moveRight = new Move(start, end, right, score + 1);
-                if (!prev.equals(right) && !moves.contains(moveRight)) {
-                    // Add move right to moves list.
-                    moves.add(moveRight);
-                    if (player.canMoveUp(right.row, right.col) ||
-                            player.canMoveRight(right.row, right.col) ||
-                            player.canMoveDown(right.row, right.col)) {
-                        // Add moves to stack.
-                        s.push(move);
-                        s.push(moveRight);
-                        continue;
+            if (player.canMoveRight(move.end.row, move.end.col)) {
+                Square right = board.table[move.end.row][move.end.col + 2];
+                Move moveRight = new Move(move.end, right);
+                if (!path.captured.contains(moveRight.captured)) {
+                    Path pathRight = new Path(path);
+                    pathRight.addMove(moveRight);
+                    if (!paths.contains(pathRight)) {
+                        paths.add(pathRight);
+                        if (player.canMoveUp(right.row, right.col) ||
+                                player.canMoveRight(right.row, right.col) ||
+                                player.canMoveDown(right.row, right.col)) {
+                            s.push(path);
+                            s.push(pathRight);
+                            continue;
+                        }
                     }
                 }
             }
             // Check move down.
-            if (player.canMoveDown(end.row, end.col)) {
-                Square down = board.table[end.row + 2][end.col];
-                Move moveDown = new Move(start, end, down, score + 1);
-                if (!prev.equals(down) && !moves.contains(moveDown)) {
-                    // Add move down to moves list.
-                    moves.add(moveDown);
-                    if (player.canMoveRight(down.row, down.col) ||
-                            player.canMoveDown(down.row, down.col) ||
-                            player.canMoveLeft(down.row, down.col)) {
-                        // Add moves to stack.
-                        s.push(move);
-                        s.push(moveDown);
-                        continue;
+            if (player.canMoveDown(move.end.row, move.end.col)) {
+                Square down = board.table[move.end.row + 2][move.end.col];
+                Move moveDown = new Move(move.end, down);
+                if (!path.captured.contains(moveDown.captured)) {
+                    Path pathDown = new Path(path);
+                    pathDown.addMove(moveDown);
+                    if (!paths.contains(pathDown)) {
+                        paths.add(pathDown);
+                        if (player.canMoveRight(down.row, down.col) ||
+                                player.canMoveDown(down.row, down.col) ||
+                                player.canMoveLeft(down.row, down.col)) {
+                            s.push(path);
+                            s.push(pathDown);
+                            continue;
+                        }
                     }
                 }
             }
             // Check move left.
-            if (player.canMoveLeft(end.row, end.col)) {
-                Square left = board.table[end.row][end.col - 2];
-                Move moveLeft = new Move(start, end, left, score + 1);
-                if (!prev.equals(left) && !moves.contains(moveLeft)) {
-                    // Add move left to moves list.
-                    moves.add(moveLeft);
-                    if (player.canMoveUp(left.row, left.col) ||
-                            player.canMoveDown(left.row, left.col) ||
-                            player.canMoveLeft(left.row, left.col)) {
-                        // Add moves to stack.
-                        s.push(move);
-                        s.push(moveLeft);
-                        continue;
+            if (player.canMoveLeft(move.end.row, move.end.col)) {
+                Square left = board.table[move.end.row][move.end.col - 2];
+                Move moveLeft = new Move(move.end, left);
+                if (!path.captured.contains(moveLeft.captured)) {
+                    Path pathLeft = new Path(path);
+                    pathLeft.addMove(moveLeft);
+                    if (!paths.contains(pathLeft)) {
+                        paths.add(pathLeft);
+                        if (player.canMoveUp(left.row, left.col) ||
+                                player.canMoveDown(left.row, left.col) ||
+                                player.canMoveLeft(left.row, left.col)) {
+                            s.push(path);
+                            s.push(pathLeft);
+                            continue;
+                        }
                     }
                 }
             }
+
+            path.visited.get(0).start.isEmpty = false;
         }
     }
 
+
     /**
-     Updates the moves using Breadth First Search.
+     Updates the paths using breadth first search.
      */
-    public void updateMovesBreadth() {
+    public void updatePathsBreadth() {
         // Populate starting queue.
-        Queue<Move> q = new LinkedList<>();
+        Queue<Path> q = new LinkedList<>();
         Player player = turn == 'B' ? black : white;
         for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {
                 if (player.canMove(i, j)) {
                     Square square = board.table[i][j];
-                    Move move = new Move(square, square, square, 0);
-                    q.add(move);
+                    Move move = new Move(square, square);
+                    Path path = new Path();
+                    path.addMove(move);
+                    q.add(path);
                 }
             }
         }
 
-        // Populate moves list.
-        moves = new ArrayList<>();
+        // Find breadth paths.
+        paths = new ArrayList<>();
         while (q.peek() != null) {
-            Move move = q.remove();
-            Square start = move.start;
-            Square prev = move.prev;
-            Square end = move.end;
+            Path path = q.remove();
+            Move move = path.visited.get(path.visited.size() - 1);
+            path.visited.get(0).start.isEmpty = true;
 
-            Integer score = move.score;
-            if (score == 9) break;
-
-            // Check move up.
-            if (player.canMoveUp(end.row, end.col)) {
-                Square up = board.table[end.row - 2][end.col];
-                Move moveUp = new Move(start, end, up, score + 1);
-                if (!prev.equals(up)) {
-                    // Add move up to moves list.
-                    moves.add(moveUp);
+            //Check move up.
+            if (player.canMoveUp(move.end.row, move.end.col)) {
+                Square up = board.table[move.end.row - 2][move.end.col];
+                Move moveUp = new Move(move.end, up);
+                if (!path.captured.contains(moveUp.captured)) {
+                    Path pathUp = new Path(path);
+                    pathUp.addMove(moveUp);
+                    paths.add(pathUp);
                     if (player.canMoveUp(up.row, up.col) ||
                             player.canMoveRight(up.row, up.col) ||
                             player.canMoveLeft(up.row, up.col)) {
-                        // Add move up to queue.
-                        q.add(moveUp);
+                        q.add(pathUp);
                     }
                 }
             }
             // Check move right.
-            if (player.canMoveRight(end.row, end.col)) {
-                Square right = board.table[end.row][end.col + 2];
-                Move moveRight = new Move(start, end, right, score + 1);
-                if (!prev.equals(right)) {
-                    // Add move right to moves list.
-                    moves.add(moveRight);
+            if (player.canMoveRight(move.end.row, move.end.col)) {
+                Square right = board.table[move.end.row][move.end.col + 2];
+                Move moveRight = new Move(move.end, right);
+                if (!path.captured.contains(moveRight.captured)) {
+                    Path pathRight = new Path(path);
+                    pathRight.addMove(moveRight);
+                    paths.add(pathRight);
                     if (player.canMoveUp(right.row, right.col) ||
                             player.canMoveRight(right.row, right.col) ||
                             player.canMoveDown(right.row, right.col)) {
-                        // Add move right to queue.
-                        q.add(moveRight);
+                        q.add(pathRight);
                     }
                 }
             }
             // Check move down.
-            if (player.canMoveDown(end.row, end.col)) {
-                Square down = board.table[end.row + 2][end.col];
-                Move moveDown = new Move(start, end, down, score + 1);
-                if (!prev.equals(down)) {
-                    // Add move down to moves list.
-                    moves.add(moveDown);
+            if (player.canMoveDown(move.end.row, move.end.col)) {
+                Square down = board.table[move.end.row + 2][move.end.col];
+                Move moveDown = new Move(move.end, down);
+                if (!path.captured.contains(moveDown.captured)) {
+                    Path pathDown = new Path(path);
+                    pathDown.addMove(moveDown);
+                    paths.add(pathDown);
                     if (player.canMoveRight(down.row, down.col) ||
                             player.canMoveDown(down.row, down.col) ||
                             player.canMoveLeft(down.row, down.col)) {
-                        // Add move down to queue.
-                        q.add(moveDown);
+                        q.add(pathDown);
                     }
                 }
             }
             // Check move left.
-            if (player.canMoveLeft(end.row, end.col)) {
-                Square left = board.table[end.row][end.col - 2];
-                Move moveLeft = new Move(start, end, left, score + 1);
-                if (!prev.equals(left)) {
-                    // Add move left to moves list.
-                    moves.add(moveLeft);
+            if (player.canMoveLeft(move.end.row, move.end.col)) {
+                Square left = board.table[move.end.row][move.end.col - 2];
+                Move moveLeft = new Move(move.end, left);
+                if (!path.captured.contains(moveLeft.captured)) {
+                    Path pathLeft = new Path(path);
+                    pathLeft.addMove(moveLeft);
+                    paths.add(pathLeft);
                     if (player.canMoveUp(left.row, left.col) ||
                             player.canMoveDown(left.row, left.col) ||
                             player.canMoveLeft(left.row, left.col)) {
-                        // Add move left to queue.
-                        q.add(moveLeft);
+                        q.add(pathLeft);
                     }
                 }
             }
+
+            path.visited.get(0).start.isEmpty = false;
         }
     }
 
+
     /**
-     Updates the moves using Best First Search.
+     Updates the paths using best first search.
      */
-    public void updateMovesBest() {
+    public void updatePathsBest() {
         // Populate starting queue.
-        Queue<Move> q = new LinkedList<>();
+        Queue<Path> q = new LinkedList<>();
         Player player = turn == 'B' ? black : white;
         for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {
                 if (player.canMove(i, j)) {
                     Square square = board.table[i][j];
-                    Move move = new Move(square, square, square, 0);
-                    q.add(move);
+                    Move move = new Move(square, square);
+                    Path path = new Path();
+                    path.addMove(move);
+                    q.add(path);
                 }
             }
         }
 
-        // Populate allMoves list.
-        ArrayList<Move> allMoves = new ArrayList<>();
+        // Find all paths.
+        ArrayList<Path> allPaths = new ArrayList<>();
         while (q.peek() != null) {
-            Move move = q.remove();
-            Square start = move.start;
-            Square prev = move.prev;
-            Square end = move.end;
+            Path path = q.remove();
+            Move move = path.visited.get(path.visited.size() - 1);
+            path.visited.get(0).start.isEmpty = true;
 
-            Integer score = move.score;
-            if (score == 9) break;
-
-            // Check move up.
-            if (player.canMoveUp(end.row, end.col)) {
-                Square up = board.table[end.row - 2][end.col];
-                Move moveUp = new Move(start, end, up, score + 1);
-                if (!prev.equals(up)) {
-                    // Add move up to allMoves list.
-                    allMoves.add(0, moveUp);
+            //Check move up.
+            if (player.canMoveUp(move.end.row, move.end.col)) {
+                Square up = board.table[move.end.row - 2][move.end.col];
+                Move moveUp = new Move(move.end, up);
+                if (!path.captured.contains(moveUp.captured)) {
+                    Path pathUp = new Path(path);
+                    pathUp.addMove(moveUp);
+                    allPaths.add(0, pathUp);
                     if (player.canMoveUp(up.row, up.col) ||
                             player.canMoveRight(up.row, up.col) ||
                             player.canMoveLeft(up.row, up.col)) {
-                        // Add move up to queue.
-                        q.add(moveUp);
+                        q.add(pathUp);
                     }
                 }
             }
             // Check move right.
-            if (player.canMoveRight(end.row, end.col)) {
-                Square right = board.table[end.row][end.col + 2];
-                Move moveRight = new Move(start, end, right, score + 1);
-                if (!prev.equals(right)) {
-                    // Add move right to allMoves list.
-                    allMoves.add(0, moveRight);
+            if (player.canMoveRight(move.end.row, move.end.col)) {
+                Square right = board.table[move.end.row][move.end.col + 2];
+                Move moveRight = new Move(move.end, right);
+                if (!path.captured.contains(moveRight.captured)) {
+                    Path pathRight = new Path(path);
+                    pathRight.addMove(moveRight);
+                    allPaths.add(0, pathRight);
                     if (player.canMoveUp(right.row, right.col) ||
                             player.canMoveRight(right.row, right.col) ||
                             player.canMoveDown(right.row, right.col)) {
-                        // Add move right to queue.
-                        q.add(moveRight);
+                        q.add(pathRight);
                     }
                 }
             }
             // Check move down.
-            if (player.canMoveDown(end.row, end.col)) {
-                Square down = board.table[end.row + 2][end.col];
-                Move moveDown = new Move(start, end, down, score + 1);
-                if (!prev.equals(down)) {
-                    // Add move down to allMoves list.
-                    allMoves.add(0, moveDown);
+            if (player.canMoveDown(move.end.row, move.end.col)) {
+                Square down = board.table[move.end.row + 2][move.end.col];
+                Move moveDown = new Move(move.end, down);
+                if (!path.captured.contains(moveDown.captured)) {
+                    Path pathDown = new Path(path);
+                    pathDown.addMove(moveDown);
+                    allPaths.add(0, pathDown);
                     if (player.canMoveRight(down.row, down.col) ||
                             player.canMoveDown(down.row, down.col) ||
                             player.canMoveLeft(down.row, down.col)) {
-                        // Add move down to queue.
-                        q.add(moveDown);
+                        q.add(pathDown);
                     }
                 }
             }
             // Check move left.
-            if (player.canMoveLeft(end.row, end.col)) {
-                Square left = board.table[end.row][end.col - 2];
-                Move moveLeft = new Move(start, end, left, score + 1);
-                if (!prev.equals(left)) {
-                    // Add move left to allMoves list.
-                    allMoves.add(0, moveLeft);
+            if (player.canMoveLeft(move.end.row, move.end.col)) {
+                Square left = board.table[move.end.row][move.end.col - 2];
+                Move moveLeft = new Move(move.end, left);
+                if (!path.captured.contains(moveLeft.captured)) {
+                    Path pathLeft = new Path(path);
+                    pathLeft.addMove(moveLeft);
+                    allPaths.add(0, pathLeft);
                     if (player.canMoveUp(left.row, left.col) ||
                             player.canMoveDown(left.row, left.col) ||
                             player.canMoveLeft(left.row, left.col)) {
-                        // Add move left to queue.
-                        q.add(moveLeft);
+                        q.add(pathLeft);
                     }
                 }
             }
+
+            path.visited.get(0).start.isEmpty = false;
         }
 
-        // Populate moves list.
-        moves = new ArrayList<>();
-        if (!allMoves.isEmpty()) {
-            Move bestMove = allMoves.remove(0);
-            moves.add(bestMove);
-
-            while(!allMoves.isEmpty()) {
-                Move move = allMoves.remove(0);
-                if (move.score == bestMove.score) {
-                    moves.add(0, move);
+        // Find best paths.
+        paths = new ArrayList<>();
+        if (!allPaths.isEmpty()) {
+            Path bestPath = allPaths.remove(0);
+            paths.add(bestPath);
+            while(!allPaths.isEmpty()) {
+                Path path = allPaths.remove(0);
+                if (path.captured.size() == bestPath.captured.size()) {
+                    paths.add(0, path);
                 }
             }
         }
@@ -636,34 +638,33 @@ public class Game {
 
     /**
      Processes each next command.
-     @return String value depending on next available move.
+     @return Path object depending on next best path.
      */
-    public String processNext() {
+    public Path processNext() {
         // Check if game is over.
         if (isOver()) {
-            return "W0" + (boardSize - 1) + (boardSize - 1) + "00";
+            return null;
         }
 
         // Check if moves is empty.
-        if (moves.isEmpty()) {
-            setSearch(search);
-            if (moves.isEmpty()) {
-                return "W0" + (boardSize - 1) + (boardSize - 1) + "00";
+        if (paths.isEmpty()) {
+            updatePaths();
+            if (paths.isEmpty()) {
+                return null;
             }
         }
 
-        Move next = moves.remove(0);
+        Path next = paths.remove(0);
 
         // Check move color.
-        if (turn != next.start.color) {
-            setSearch(search);
-            if (moves.isEmpty()) {
-                return "W0" + (boardSize - 1) + (boardSize - 1) + "00";
+        if (turn != next.visited.get(0).start.color) {
+            updatePaths();
+            if (paths.isEmpty()) {
+                return null;
             }
-            next = moves.remove(0);
+            next = paths.remove(0);
         }
 
-        return "" + next.start.color + next.start.row + next.start.col +
-                next.end.row + next.end.col + next.score;
+        return next;
     }
 }
