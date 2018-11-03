@@ -1,6 +1,7 @@
 package edu.ramapo.ktavadze.konane;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Scanner;
@@ -22,7 +23,11 @@ public class Game {
     public boolean isCombo = false;
     public int row;
     public int col;
-    public ArrayList<Path> paths = null;
+    public int cutoff = 4;
+    public ArrayList<Path> minimaxRoots = null;
+    public Path minimaxPath = null;
+    public boolean useAlphaBeta = false;
+    public long minimaxTime = 0;
 
     /**
      Game class constructor.
@@ -49,7 +54,6 @@ public class Game {
             black = new Player('B', true);
             white = new Player('W', true);
         }
-        updatePaths();
     }
 
     /**
@@ -150,14 +154,12 @@ public class Game {
         // Black passes.
         if (turn == 'B') {
             turn = 'W';
-            updatePaths();
 
             return "Black passes!";
         }
         // White passes.
         else {
             turn = 'B';
-            updatePaths();
 
             return "White passes!";
         }
@@ -297,7 +299,6 @@ public class Game {
         // Reset move.
         isMoving = false;
         isCombo = false;
-        updatePaths();
     }
 
     /**
@@ -326,22 +327,15 @@ public class Game {
     }
 
     /**
-     Updates the paths.
-     */
-    public void updatePaths() {
-        updatePathsBest();
-    }
-
-    /**
      Updates the paths using depth first search.
+     @param a_player - Player object to be considered.
      */
-    public void updatePathsDepth() {
+    public ArrayList<Path> getPathsDepth(Player a_player) {
         // Populate starting stack.
         Stack<Path> s = new Stack<>();
-        Player player = turn == 'B' ? black : white;
         for (int i = boardSize - 1; i >= 0; i--) {
             for (int j = boardSize - 1; j >= 0; j--) {
-                if (player.canMove(i, j)) {
+                if (a_player.canMove(i, j)) {
                     Square square = board.table[i][j];
                     Move move = new Move(square, square);
                     Path path = new Path();
@@ -352,14 +346,14 @@ public class Game {
         }
 
         // Find depth paths.
-        paths = new ArrayList<>();
+        ArrayList<Path> paths = new ArrayList<>();
         while (!s.empty()) {
             Path path = s.pop();
             Move move = path.visited.get(path.visited.size() - 1);
             path.visited.get(0).start.isEmpty = true;
 
             // Check move up.
-            if (player.canMoveUp(move.end.row, move.end.col)) {
+            if (a_player.canMoveUp(move.end.row, move.end.col)) {
                 Square up = board.table[move.end.row - 2][move.end.col];
                 Move moveUp = new Move(move.end, up);
                 if (!path.captured.contains(moveUp.captured)) {
@@ -367,9 +361,9 @@ public class Game {
                     pathUp.addMove(moveUp);
                     if (!paths.contains(pathUp)) {
                         paths.add(pathUp);
-                        if (player.canMoveUp(up.row, up.col) ||
-                                player.canMoveRight(up.row, up.col) ||
-                                player.canMoveLeft(up.row, up.col)) {
+                        if (a_player.canMoveUp(up.row, up.col) ||
+                                a_player.canMoveRight(up.row, up.col) ||
+                                a_player.canMoveLeft(up.row, up.col)) {
                             s.push(path);
                             s.push(pathUp);
                             continue;
@@ -378,7 +372,7 @@ public class Game {
                 }
             }
             // Check move right.
-            if (player.canMoveRight(move.end.row, move.end.col)) {
+            if (a_player.canMoveRight(move.end.row, move.end.col)) {
                 Square right = board.table[move.end.row][move.end.col + 2];
                 Move moveRight = new Move(move.end, right);
                 if (!path.captured.contains(moveRight.captured)) {
@@ -386,9 +380,9 @@ public class Game {
                     pathRight.addMove(moveRight);
                     if (!paths.contains(pathRight)) {
                         paths.add(pathRight);
-                        if (player.canMoveUp(right.row, right.col) ||
-                                player.canMoveRight(right.row, right.col) ||
-                                player.canMoveDown(right.row, right.col)) {
+                        if (a_player.canMoveUp(right.row, right.col) ||
+                                a_player.canMoveRight(right.row, right.col) ||
+                                a_player.canMoveDown(right.row, right.col)) {
                             s.push(path);
                             s.push(pathRight);
                             continue;
@@ -397,7 +391,7 @@ public class Game {
                 }
             }
             // Check move down.
-            if (player.canMoveDown(move.end.row, move.end.col)) {
+            if (a_player.canMoveDown(move.end.row, move.end.col)) {
                 Square down = board.table[move.end.row + 2][move.end.col];
                 Move moveDown = new Move(move.end, down);
                 if (!path.captured.contains(moveDown.captured)) {
@@ -405,9 +399,9 @@ public class Game {
                     pathDown.addMove(moveDown);
                     if (!paths.contains(pathDown)) {
                         paths.add(pathDown);
-                        if (player.canMoveRight(down.row, down.col) ||
-                                player.canMoveDown(down.row, down.col) ||
-                                player.canMoveLeft(down.row, down.col)) {
+                        if (a_player.canMoveRight(down.row, down.col) ||
+                                a_player.canMoveDown(down.row, down.col) ||
+                                a_player.canMoveLeft(down.row, down.col)) {
                             s.push(path);
                             s.push(pathDown);
                             continue;
@@ -416,7 +410,7 @@ public class Game {
                 }
             }
             // Check move left.
-            if (player.canMoveLeft(move.end.row, move.end.col)) {
+            if (a_player.canMoveLeft(move.end.row, move.end.col)) {
                 Square left = board.table[move.end.row][move.end.col - 2];
                 Move moveLeft = new Move(move.end, left);
                 if (!path.captured.contains(moveLeft.captured)) {
@@ -424,9 +418,9 @@ public class Game {
                     pathLeft.addMove(moveLeft);
                     if (!paths.contains(pathLeft)) {
                         paths.add(pathLeft);
-                        if (player.canMoveUp(left.row, left.col) ||
-                                player.canMoveDown(left.row, left.col) ||
-                                player.canMoveLeft(left.row, left.col)) {
+                        if (a_player.canMoveUp(left.row, left.col) ||
+                                a_player.canMoveDown(left.row, left.col) ||
+                                a_player.canMoveLeft(left.row, left.col)) {
                             s.push(path);
                             s.push(pathLeft);
                             continue;
@@ -437,19 +431,21 @@ public class Game {
 
             path.visited.get(0).start.isEmpty = false;
         }
+
+        return paths;
     }
 
 
     /**
      Updates the paths using breadth first search.
+     @param a_player - Player object to be considered.
      */
-    public void updatePathsBreadth() {
+    public ArrayList<Path> getPathsBreadth(Player a_player) {
         // Populate starting queue.
         Queue<Path> q = new LinkedList<>();
-        Player player = turn == 'B' ? black : white;
         for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {
-                if (player.canMove(i, j)) {
+                if (a_player.canMove(i, j)) {
                     Square square = board.table[i][j];
                     Move move = new Move(square, square);
                     Path path = new Path();
@@ -460,68 +456,68 @@ public class Game {
         }
 
         // Find breadth paths.
-        paths = new ArrayList<>();
+        ArrayList<Path> paths = new ArrayList<>();
         while (q.peek() != null) {
             Path path = q.remove();
             Move move = path.visited.get(path.visited.size() - 1);
             path.visited.get(0).start.isEmpty = true;
 
             //Check move up.
-            if (player.canMoveUp(move.end.row, move.end.col)) {
+            if (a_player.canMoveUp(move.end.row, move.end.col)) {
                 Square up = board.table[move.end.row - 2][move.end.col];
                 Move moveUp = new Move(move.end, up);
                 if (!path.captured.contains(moveUp.captured)) {
                     Path pathUp = new Path(path);
                     pathUp.addMove(moveUp);
                     paths.add(pathUp);
-                    if (player.canMoveUp(up.row, up.col) ||
-                            player.canMoveRight(up.row, up.col) ||
-                            player.canMoveLeft(up.row, up.col)) {
+                    if (a_player.canMoveUp(up.row, up.col) ||
+                            a_player.canMoveRight(up.row, up.col) ||
+                            a_player.canMoveLeft(up.row, up.col)) {
                         q.add(pathUp);
                     }
                 }
             }
             // Check move right.
-            if (player.canMoveRight(move.end.row, move.end.col)) {
+            if (a_player.canMoveRight(move.end.row, move.end.col)) {
                 Square right = board.table[move.end.row][move.end.col + 2];
                 Move moveRight = new Move(move.end, right);
                 if (!path.captured.contains(moveRight.captured)) {
                     Path pathRight = new Path(path);
                     pathRight.addMove(moveRight);
                     paths.add(pathRight);
-                    if (player.canMoveUp(right.row, right.col) ||
-                            player.canMoveRight(right.row, right.col) ||
-                            player.canMoveDown(right.row, right.col)) {
+                    if (a_player.canMoveUp(right.row, right.col) ||
+                            a_player.canMoveRight(right.row, right.col) ||
+                            a_player.canMoveDown(right.row, right.col)) {
                         q.add(pathRight);
                     }
                 }
             }
             // Check move down.
-            if (player.canMoveDown(move.end.row, move.end.col)) {
+            if (a_player.canMoveDown(move.end.row, move.end.col)) {
                 Square down = board.table[move.end.row + 2][move.end.col];
                 Move moveDown = new Move(move.end, down);
                 if (!path.captured.contains(moveDown.captured)) {
                     Path pathDown = new Path(path);
                     pathDown.addMove(moveDown);
                     paths.add(pathDown);
-                    if (player.canMoveRight(down.row, down.col) ||
-                            player.canMoveDown(down.row, down.col) ||
-                            player.canMoveLeft(down.row, down.col)) {
+                    if (a_player.canMoveRight(down.row, down.col) ||
+                            a_player.canMoveDown(down.row, down.col) ||
+                            a_player.canMoveLeft(down.row, down.col)) {
                         q.add(pathDown);
                     }
                 }
             }
             // Check move left.
-            if (player.canMoveLeft(move.end.row, move.end.col)) {
+            if (a_player.canMoveLeft(move.end.row, move.end.col)) {
                 Square left = board.table[move.end.row][move.end.col - 2];
                 Move moveLeft = new Move(move.end, left);
                 if (!path.captured.contains(moveLeft.captured)) {
                     Path pathLeft = new Path(path);
                     pathLeft.addMove(moveLeft);
                     paths.add(pathLeft);
-                    if (player.canMoveUp(left.row, left.col) ||
-                            player.canMoveDown(left.row, left.col) ||
-                            player.canMoveLeft(left.row, left.col)) {
+                    if (a_player.canMoveUp(left.row, left.col) ||
+                            a_player.canMoveDown(left.row, left.col) ||
+                            a_player.canMoveLeft(left.row, left.col)) {
                         q.add(pathLeft);
                     }
                 }
@@ -529,19 +525,21 @@ public class Game {
 
             path.visited.get(0).start.isEmpty = false;
         }
+
+        return paths;
     }
 
 
     /**
      Updates the paths using best first search.
+     @param a_player - Player object to be considered.
      */
-    public void updatePathsBest() {
+    public ArrayList<Path> getPathsBest(Player a_player) {
         // Populate starting queue.
         Queue<Path> q = new LinkedList<>();
-        Player player = turn == 'B' ? black : white;
         for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {
-                if (player.canMove(i, j)) {
+                if (a_player.canMove(i, j)) {
                     Square square = board.table[i][j];
                     Move move = new Move(square, square);
                     Path path = new Path();
@@ -559,61 +557,61 @@ public class Game {
             path.visited.get(0).start.isEmpty = true;
 
             //Check move up.
-            if (player.canMoveUp(move.end.row, move.end.col)) {
+            if (a_player.canMoveUp(move.end.row, move.end.col)) {
                 Square up = board.table[move.end.row - 2][move.end.col];
                 Move moveUp = new Move(move.end, up);
                 if (!path.captured.contains(moveUp.captured)) {
                     Path pathUp = new Path(path);
                     pathUp.addMove(moveUp);
                     allPaths.add(0, pathUp);
-                    if (player.canMoveUp(up.row, up.col) ||
-                            player.canMoveRight(up.row, up.col) ||
-                            player.canMoveLeft(up.row, up.col)) {
+                    if (a_player.canMoveUp(up.row, up.col) ||
+                            a_player.canMoveRight(up.row, up.col) ||
+                            a_player.canMoveLeft(up.row, up.col)) {
                         q.add(pathUp);
                     }
                 }
             }
             // Check move right.
-            if (player.canMoveRight(move.end.row, move.end.col)) {
+            if (a_player.canMoveRight(move.end.row, move.end.col)) {
                 Square right = board.table[move.end.row][move.end.col + 2];
                 Move moveRight = new Move(move.end, right);
                 if (!path.captured.contains(moveRight.captured)) {
                     Path pathRight = new Path(path);
                     pathRight.addMove(moveRight);
                     allPaths.add(0, pathRight);
-                    if (player.canMoveUp(right.row, right.col) ||
-                            player.canMoveRight(right.row, right.col) ||
-                            player.canMoveDown(right.row, right.col)) {
+                    if (a_player.canMoveUp(right.row, right.col) ||
+                            a_player.canMoveRight(right.row, right.col) ||
+                            a_player.canMoveDown(right.row, right.col)) {
                         q.add(pathRight);
                     }
                 }
             }
             // Check move down.
-            if (player.canMoveDown(move.end.row, move.end.col)) {
+            if (a_player.canMoveDown(move.end.row, move.end.col)) {
                 Square down = board.table[move.end.row + 2][move.end.col];
                 Move moveDown = new Move(move.end, down);
                 if (!path.captured.contains(moveDown.captured)) {
                     Path pathDown = new Path(path);
                     pathDown.addMove(moveDown);
                     allPaths.add(0, pathDown);
-                    if (player.canMoveRight(down.row, down.col) ||
-                            player.canMoveDown(down.row, down.col) ||
-                            player.canMoveLeft(down.row, down.col)) {
+                    if (a_player.canMoveRight(down.row, down.col) ||
+                            a_player.canMoveDown(down.row, down.col) ||
+                            a_player.canMoveLeft(down.row, down.col)) {
                         q.add(pathDown);
                     }
                 }
             }
             // Check move left.
-            if (player.canMoveLeft(move.end.row, move.end.col)) {
+            if (a_player.canMoveLeft(move.end.row, move.end.col)) {
                 Square left = board.table[move.end.row][move.end.col - 2];
                 Move moveLeft = new Move(move.end, left);
                 if (!path.captured.contains(moveLeft.captured)) {
                     Path pathLeft = new Path(path);
                     pathLeft.addMove(moveLeft);
                     allPaths.add(0, pathLeft);
-                    if (player.canMoveUp(left.row, left.col) ||
-                            player.canMoveDown(left.row, left.col) ||
-                            player.canMoveLeft(left.row, left.col)) {
+                    if (a_player.canMoveUp(left.row, left.col) ||
+                            a_player.canMoveDown(left.row, left.col) ||
+                            a_player.canMoveLeft(left.row, left.col)) {
                         q.add(pathLeft);
                     }
                 }
@@ -623,7 +621,7 @@ public class Game {
         }
 
         // Find best paths.
-        paths = new ArrayList<>();
+        ArrayList<Path> paths = new ArrayList<>();
         if (!allPaths.isEmpty()) {
             Path bestPath = allPaths.remove(0);
             paths.add(bestPath);
@@ -634,37 +632,296 @@ public class Game {
                 }
             }
         }
+
+        return paths;
     }
 
     /**
      Processes each next command.
-     @return Path object depending on next best path.
+     @return Path object generated by minimax.
      */
     public Path processNext() {
-        // Check if game is over.
-        if (isOver()) {
-            return null;
+        Player player = turn == 'B' ? black : white;
+        updateMinimaxPath(player);
+
+        return minimaxPath;
+    }
+
+    /**
+     Updates the minimax path for the specified player.
+     @param a_player - Player object to be considered.
+     */
+    public void updateMinimaxPath(Player a_player) {
+        minimaxRoots = new ArrayList<>();
+
+        // Call the appropriate minimax function and time it.
+        long startTime = System.currentTimeMillis();
+        if (a_player.color == 'B') {
+            minimaxBlack(0, black, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        }
+        else {
+            minimaxWhite(0, white, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        }
+        long endTime = System.currentTimeMillis();
+        minimaxTime = endTime - startTime;
+
+        if (minimaxRoots.isEmpty()) {
+            minimaxPath = null;
+            return;
         }
 
-        // Check if moves is empty.
-        if (paths.isEmpty()) {
-            updatePaths();
-            if (paths.isEmpty()) {
-                return null;
+        // Pick the first best minimax path from minimax roots.
+        Path path = minimaxRoots.get(0);
+        minimaxPath = path;
+        int score = path.minimaxValue;
+        System.out.println("Roots");
+        for (Path p : minimaxRoots) {
+            System.out.println(p.toString());
+            if (p.minimaxValue > score) {
+                minimaxPath = p;
+                score = p.minimaxValue;
+            }
+        }
+    }
+
+    /**
+     Populates the minimax roots for the specified depth, player, alpha and beta.
+     @param a_depth - Integer depth value.
+     @param a_player - Player object to be considered.
+     @param a_alpha - Integer alpha value.
+     @param a_beta - Integer beta value.
+     @return Integer value depending on heuristic function.
+     */
+    public Integer minimaxBlack(int a_depth, Player a_player, int a_alpha, int a_beta) {
+        if (isOver() || a_depth > cutoff) {
+            return getHeuristic(black);
+        }
+
+        ArrayList<Path> allPaths = getPathsDepth(a_player);
+        if (allPaths.isEmpty()) {
+            return getHeuristic(black);
+        }
+
+        boolean[][] savedTable = new boolean[boardSize][boardSize];
+        copyTable(savedTable);
+
+//        System.out.println("All at " + a_depth);
+//        for (Path p : allPaths) {
+//            System.out.println(p.toString());
+//        }
+
+        ArrayList<Integer> scores = new ArrayList<>();
+        for (int i = 0; i < allPaths.size(); i++) {
+            Path path = allPaths.get(i);
+            applyPath(path);
+
+//            System.out.println("Applied at " + a_depth);
+//            System.out.println(path.toString());
+//            for (int r = 0; r < boardSize; r++) {
+//                for (int c = 0; c < boardSize; c++) {
+//                    if (board.table[r][c].isEmpty) {
+//                        System.out.print("  ");
+//                    }
+//                    else {
+//                        if (board.table[r][c].color == 'B') {
+//                            System.out.print("B ");
+//                        }
+//                        else {
+//                            System.out.print("W ");
+//                        }
+//                    }
+//                }
+//                System.out.println();
+//            }
+
+            if (a_player.color == 'B') {
+                int score = minimaxBlack(a_depth + 1, white, a_alpha, a_beta);
+                scores.add(score);
+
+                if (useAlphaBeta) {
+                    if (path.minimaxValue > a_alpha) {
+                        a_alpha = path.minimaxValue;
+                    }
+                    if (a_beta <= a_alpha) break;
+                }
+
+                if (a_depth == 0) {
+                    path.minimaxValue = score;
+                    minimaxRoots.add(path);
+                }
+            }
+            else {
+                int score = minimaxBlack(a_depth + 1, black, a_alpha, a_beta);
+                scores.add(score);
+
+                if (useAlphaBeta) {
+                    if (path.minimaxValue < a_beta) {
+                        a_beta = path.minimaxValue;
+                    }
+                    if (a_alpha >= a_beta) break;
+                }
+            }
+
+            resetTable(savedTable);
+        }
+
+        if (a_player.color == 'B') {
+            return Collections.max(scores);
+        }
+        return Collections.min(scores);
+    }
+
+    /**
+     Populates the minimax roots for the specified depth, player, alpha and beta.
+     @param a_depth - Integer depth value.
+     @param a_player - Player object to be considered.
+     @param a_alpha - Integer alpha value.
+     @param a_beta - Integer beta value.
+     @return Integer value depending on heuristic function.
+     */
+    public Integer minimaxWhite(int a_depth, Player a_player, int a_alpha, int a_beta) {
+        if (isOver() || a_depth > cutoff) {
+            return getHeuristic(white);
+        }
+
+        ArrayList<Path> allPaths = getPathsDepth(a_player);
+        if (allPaths.isEmpty()) {
+            return getHeuristic(white);
+        }
+
+        boolean[][] savedTable = new boolean[boardSize][boardSize];
+        copyTable(savedTable);
+
+//        System.out.println("All at " + a_depth);
+//        for (Path p : allPaths) {
+//            System.out.println(p.toString());
+//        }
+
+        ArrayList<Integer> scores = new ArrayList<>();
+        for (int i = 0; i < allPaths.size(); i++) {
+            Path path = allPaths.get(i);
+            applyPath(path);
+
+//            System.out.println("Applied at " + a_depth);
+//            System.out.println(path.toString());
+//            for (int r = 0; r < boardSize; r++) {
+//                for (int c = 0; c < boardSize; c++) {
+//                    if (board.table[r][c].isEmpty) {
+//                        System.out.print("  ");
+//                    }
+//                    else {
+//                        if (board.table[r][c].color == 'B') {
+//                            System.out.print("B ");
+//                        }
+//                        else {
+//                            System.out.print("W ");
+//                        }
+//                    }
+//                }
+//                System.out.println();
+//            }
+
+            if (a_player.color == 'W') {
+                int score = minimaxWhite(a_depth + 1, black, a_alpha, a_beta);
+                scores.add(score);
+
+                if (useAlphaBeta) {
+                    if (path.minimaxValue > a_alpha) {
+                        a_alpha = path.minimaxValue;
+                    }
+                    if (a_beta <= a_alpha) break;
+                }
+
+                if (a_depth == 0) {
+                    path.minimaxValue = score;
+                    minimaxRoots.add(path);
+                }
+            }
+            else {
+                int score = minimaxWhite(a_depth + 1, white, a_alpha, a_beta);
+                scores.add(score);
+
+                if (useAlphaBeta) {
+                    if (path.minimaxValue < a_beta) {
+                        a_beta = path.minimaxValue;
+                    }
+                    if (a_alpha >= a_beta) break;
+                }
+            }
+
+            resetTable(savedTable);
+        }
+
+        if (a_player.color == 'W') {
+            return Collections.max(scores);
+        }
+        return Collections.min(scores);
+    }
+
+    /**
+     Generates a heuristic value based on the current board state for the specified player.
+     @param a_player - Player object to be considered.
+     @return Integer value depending on current board.
+     */
+    public int getHeuristic(Player a_player) {
+        int blackCount = 0;
+        int whiteCount = 0;
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
+                if (!board.table[i][j].isEmpty) {
+                    if (board.table[i][j].color == 'B') {
+                        blackCount++;
+                    }
+                    else {
+                        whiteCount++;
+                    }
+                }
             }
         }
 
-        Path next = paths.remove(0);
-
-        // Check move color.
-        if (turn != next.visited.get(0).start.color) {
-            updatePaths();
-            if (paths.isEmpty()) {
-                return null;
-            }
-            next = paths.remove(0);
+        if (a_player.color == 'B') {
+            return blackCount - whiteCount;
         }
+        return whiteCount - blackCount;
+    }
 
-        return next;
+    /**
+     Copies the current board state into the specified 2D boolean array.
+     @param a_table - Boolean array to be copied to.
+     */
+    public void copyTable(boolean[][] a_table) {
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
+                a_table[i][j] = board.table[i][j].isEmpty;
+            }
+        }
+    }
+
+    /**
+     Resets the current board state using the specified 2D boolean array.
+     @param a_table - Boolean array to be copied from.
+     */
+    public void resetTable(boolean[][] a_table) {
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
+                board.table[i][j].isEmpty = a_table[i][j];
+            }
+        }
+    }
+
+    /**
+     Applies the specified path to the current board state.
+     @param a_path - Path object to be applied.
+     */
+    public void applyPath(Path a_path) {
+        Square start = a_path.visited.get(1).start;
+        start.isEmpty = true;
+
+        Square end = a_path.visited.get(a_path.visited.size()-1).end;
+        end.isEmpty = false;
+
+        for (int i = 1; i < a_path.captured.size(); i++) {
+            a_path.captured.get(i).isEmpty = true;
+        }
     }
 }

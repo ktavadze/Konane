@@ -15,4 +15,7 @@
     <string name="settings_multi">Multi</string>
     <string name="settings_first">1st</string>
     <string name="settings_second">2nd</string>
+    <string name="settings_n">N</string>
+    <string name="settings_y">Y</string>
+    <string name="settings_cutoff">Cutoff</string>
 </resources>

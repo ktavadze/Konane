@@ -64,5 +64,29 @@
                 android:layout_height="wrap_content"
                 android:text="@string/settings_second"/>
         </RadioGroup>
+
+        <RadioGroup android:id="@+id/ab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="25dp"
+            android:orientation="horizontal">
+
+
+            <RadioButton android:id="@+id/n"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_n"/>
+
+            <RadioButton android:id="@+id/y"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_y"/>
+        </RadioGroup>
+
+        <EditText android:id="@+id/cutoff"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:inputType="number"
+            android:hint="@string/settings_cutoff"/>
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

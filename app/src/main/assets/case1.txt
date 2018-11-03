@@ -1,10 +1,12 @@
-Black: T0
-White: T0
-Board: 6
-O W O W O O
-W O W O W O
-O W B W O O
-W O W O W O
-O W O W O O
-O O O O O O
+Black: T3
+White: F3
+Board: 8
+B W B W B W B W
+W B W O W B W B
+B W B W B W B W
+W B W B W B O B
+B W B W B W B W
+W B W O W O W B
+B W B W B W B W
+W B O B O B W B
 Next Player: Black

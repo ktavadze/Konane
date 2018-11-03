@@ -9,6 +9,7 @@ import java.util.ArrayList;
 public class Path {
     public ArrayList<Move> visited;
     public ArrayList<Square> captured;
+    public int minimaxValue;
 
     /**
      Path class constructor.
@@ -59,5 +60,19 @@ public class Path {
     public void addMove(Move a_move) {
         visited.add(a_move);
         captured.add(a_move.captured);
+    }
+
+    /**
+     Provides the string representation of a path.
+     @return String value depending on path details.
+     */
+    public String toString() {
+        String result = "From " + visited.get(1).start.row + visited.get(1).start.col;
+        result += " to " + visited.get(1).end.row + visited.get(1).end.col;
+        for (int i = 2; i < visited.size(); i++) {
+            result += " to " + visited.get(i).end.row + visited.get(i).end.col;
+        }
+        result += " for " + (captured.size() - 1);
+        return result;
     }
 }

@@ -34,9 +34,8 @@ public class Board {
         Square square1 = table[a_r1][a_c1];
         Square square2 = table[a_r2][a_c2];
 
-        // Update destination.
-        square2.color = square1.color;
-        square2.isEmpty = false;
+        // Update origin.
+        square1.isEmpty = true;
 
         // Update midpoint.
         if (a_r1 == a_r2) {
@@ -56,8 +55,8 @@ public class Board {
             }
         }
 
-        // Update origin.
-        square1.isEmpty = true;
+        // Update destination.
+        square2.isEmpty = false;
     }
 
     /**

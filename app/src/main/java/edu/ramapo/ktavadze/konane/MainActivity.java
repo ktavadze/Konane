@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -293,18 +294,18 @@ public class MainActivity extends AppCompatActivity {
         String turnInfo = Character.toString(game.turn);
         if (game.turn == 'B') {
             if (game.black.isHuman) {
-                turnInfo += "T";
+                turnInfo += " Human";
             }
             else {
-                turnInfo += "F";
+                turnInfo += " CPU";
             }
         }
         else {
             if (game.white.isHuman) {
-                turnInfo += "T";
+                turnInfo += " Human";
             }
             else {
-                turnInfo += "F";
+                turnInfo += " CPU";
             }
         }
         ((TextView) findViewById( R.id.turn )).setText(turnInfo);
@@ -519,6 +520,21 @@ public class MainActivity extends AppCompatActivity {
             secondRB.setChecked(true);
         }
 
+        // Select current alpha beta.
+        final RadioGroup abRG = dialogView.findViewById(R.id.ab);
+        final RadioButton nRB = dialogView.findViewById(R.id.n);
+        final RadioButton yRB = dialogView.findViewById(R.id.y);
+        if (game.useAlphaBeta) {
+            yRB.setChecked(true);
+        }
+        else {
+            nRB.setChecked(true);
+        }
+
+        // Select current cutoff.
+        final EditText cut = dialogView.findViewById(R.id.cutoff);
+        cut.setText(Integer.toString(game.cutoff));
+
         // Define responses.
         dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
@@ -566,7 +582,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
                 }
 
-                // Update guess
+                // Update guess.
                 RadioButton guessRB = guessRG.findViewById(guessRG.getCheckedRadioButtonId());
                 String selectedGuess = guessRB.getText().toString();
                 switch (selectedGuess) {
@@ -588,7 +604,27 @@ public class MainActivity extends AppCompatActivity {
                     respondToRestart(game.boardSize, game.mode, game.guess);
                 }
 
-                displayMessage(selectedGuess + selectedSize + selectedMode);
+                // Update alpha beta.
+                RadioButton abRB = abRG.findViewById(abRG.getCheckedRadioButtonId());
+                String selectedAB = abRB.getText().toString();
+                switch (selectedAB) {
+                    case "Y":
+                        if (!game.useAlphaBeta) {
+                            game.useAlphaBeta = true;
+                        }
+                        break;
+                    case "N":
+                        if (game.useAlphaBeta) {
+                            game.useAlphaBeta = false;
+                        }
+                        break;
+                }
+
+                // Update cutoff.
+                String selectedCutoff = cut.getText().toString();
+                if (!selectedCutoff.equals(Integer.toString(game.cutoff))) {
+                    game.cutoff = Integer.parseInt(selectedCutoff);
+                }
             }
         });
         dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -603,7 +639,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     Responds to the next clicks and updates the view accordingly.
+     Responds to the next clicks and displays the generated hint.
      @param view - View to be listened to.
      */
     public void respondToNext(View view) {
@@ -613,7 +649,10 @@ public class MainActivity extends AppCompatActivity {
         // Process next.
         Path next = game.processNext();
 
-        if (next == null) return;
+        if (next == null) {
+            displayMessage("No moves available!");
+            return;
+        }
 
         // Display next hint.
         String startTag = "b" + next.visited.get(0).start.row + next.visited.get(0).start.col;
@@ -626,14 +665,9 @@ public class MainActivity extends AppCompatActivity {
         startBtn.setBackgroundColor(Color.parseColor("#FFFF00"));
         endBtn.setBackgroundColor(Color.parseColor("#FFFF00"));
 
-        String test = "";
-        for (int i = 1; i < next.visited.size(); i++) {
-            Move temp = next.visited.get(i);
-            test += " " + temp.start.row + temp.start.col + temp.end.row + temp.end.col;
-        }
-
-        // Preview score.
-        displayMessage(test);
+        String summary = next.toString();
+        summary += "\nTime: " + game.minimaxTime + "ms";
+        displayMessage(summary);
 
         hint = next;
     }
